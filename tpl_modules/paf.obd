@@ -1,0 +1,14 @@
+# Standard parameter file header
+PAF.HDR.START                            ;  # Marks start of header
+PAF.TYPE                 "OB Description";  # Type of parfile
+PAF.ID                                 "";  # Unused
+PAF.NAME                               "";  # Unused
+PAF.DESC                               "";  # Unused
+PAF.CRTE.NAME                       "BOB";  # Broker for OBs
+PAF.CRTE.DAYTIM                        "";  # Date+time of creation
+PAF.LCHG.NAME                          "";  # Unused
+PAF.LCHG.DAYTIM                        "";  # Date+time of last change
+PAF.CHCK.NAME                          "";  # Unused
+PAF.CHCK.DAYTIM                        "";  # Unused
+PAF.CHCK.CHECKSUM                      "";  # Unused
+PAF.HDR.END                              ;  # Marks end of header

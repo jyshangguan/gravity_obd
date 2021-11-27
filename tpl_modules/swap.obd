@@ -1,0 +1,11 @@
+# swap
+TPL.ID                         "GRAVITY_dual_obs_swap"
+TPL.NAME                       ""
+DET1.DIT                       "0.7"
+# SKY.X/Y=location of sky relative to object position
+# i.e.positive if sky is NE of the object
+SEQ.SKY.X                      "2000"
+SEQ.SKY.Y                      "2000"
+SEQ.SWAP                       "T"
+SEQ.PICKFT                     "T"
+SEQ.TAKESKY                    "F"

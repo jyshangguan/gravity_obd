@@ -1,0 +1,24 @@
+# dither
+TPL.ID                         "GRAVITY_dual_acq_dither"
+TPL.NAME                       ""
+DET1.DIT                       "0.7"
+SEQ.FT.ROBJ.NAME               ""
+SEQ.INS.SOBJ.NAME              ""
+# SOBJ.X/Y = location of SC star relative to FT star
+# i.e. positive if SC star is NE of FT star
+SEQ.INS.SOBJ.X                 ""
+SEQ.INS.SOBJ.Y                 ""
+SEQ.FT.ROBJ.MAG                ""
+SEQ.INS.SOBJ.MAG               ""
+SEQ.PICKSC                     "F"
+SEQ.PICKFT                     "T"
+SEQ.TAKESKY                    "F"
+SEQ.FI.WIN                     "30"
+# DITHER.X/Y = move FT center by given amount
+# i.e. positive if new FT star is NE of previous FT star
+SEQ.DITHER.X                   "0"
+SEQ.DITHER.Y                   "0"
+# SKY.X/Y=location of sky relative to object position
+# i.e.positive if sky is NE of the object
+SEQ.SKY.X                      "2000"
+SEQ.SKY.Y                      "2000"
