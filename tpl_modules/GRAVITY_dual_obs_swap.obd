@@ -1,3 +1,16 @@
 # swap
-TPL.ID                         "GRAVITY_dual_obs_swap"
-SEQ.FT.MODE                    "AUTO"
+TPL.ID                  "GRAVITY_dual_obs_swap";
+TPL.NAME                      "Dual Field Swap";
+SEQ.FT.MODE                              "AUTO";
+#DET1.DIT                                  "0.7";  # JS: It seems that we do not need to specify the other parameters
+#DET2.DIT                                  "0.3";
+#DET2.NDIT.SKY                               "2";
+#SEQ.FRINGETRACK                             "T";
+#SEQ.PICKFT                                  "T";
+#SEQ.SKY.X                                "2000";
+#SEQ.SKY.Y                                "2000";
+#SEQ.SWAP                                    "T";
+#SEQ.TAKESKY                                 "T";
+#SEQ.TRACKFI                                 "T";
+#SEQ.TRACKPUP                                "T";
+#SEQ.TRACKROT                                "T";

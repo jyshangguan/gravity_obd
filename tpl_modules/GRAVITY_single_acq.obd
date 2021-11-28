@@ -1,6 +1,6 @@
 # acquisition
-TPL.ID                         "GRAVITY_dual_acq";
-TPL.NAME          "GRAVITY Dual Mode Acquisition";
+TPL.ID                       "GRAVITY_single_acq";
+TPL.NAME        "GRAVITY Single Mode Acquisition";
 DET1.DIT                                    "0.7";
 DET2.DIT                                    "0.3";
 DET2.NDIT.SKY                                 "1";
@@ -21,17 +21,11 @@ TEL.TARG.RADVEL                               "0";
 TEL.TARG.WLENGTH                           "2200";
 
 # Sequence
-SEQ.FT.ROBJ.NAME                               "";
-SEQ.FT.ROBJ.MAG                                "";
-SEQ.FT.ROBJ.DIAMETER                        "0.0";  # mas
-SEQ.FT.ROBJ.VIS                               "1";
 SEQ.FT.MODE                                "AUTO";
 SEQ.INS.SOBJ.NAME                              "";
 SEQ.INS.SOBJ.MAG                               "";
 SEQ.INS.SOBJ.DIAMETER                       "0.0";  # mas
 SEQ.INS.SOBJ.VIS                              "1";
-SEQ.INS.SOBJ.X                                 "";  # mas
-SEQ.INS.SOBJ.Y                                 "";  # mas
 SEQ.FI.HMAG                                    "";
 SEQ.ALIGN                                     "F";
 SEQ.FI.WIN                                   "30";
@@ -51,7 +45,7 @@ SEQ.TAKESKY                                   "T";
 SEQ.TRACKFI                                   "T";
 SEQ.TRACKPUP                                  "T";
 SEQ.TRACKROT                                  "T";
-SEQ.TRACKSC                                   "T";
+SEQ.TRACKSC                                   "F";
 INS.SPEC.RES                                "MED";
 INS.FT.POL                                   "IN";
 INS.SPEC.POL                                 "IN";
@@ -76,4 +70,4 @@ DEL.REF.MODE                               "AUTO";
 DEL.REF.NAME                                  "1";
 DEL.REF.OPL                                 "250";
 ISS.BASELINE                        "astrometric";
-ISS.VLTITYPE                         "astrometry";
+ISS.VLTITYPE                           "snapshot";

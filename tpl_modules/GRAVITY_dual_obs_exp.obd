@@ -1,17 +1,19 @@
 # exposure of dual field observation
-TPL.ID                         "GRAVITY_dual_obs_exp"
-DET2.DIT                       "1"
-DET2.NDIT.OBJECT               "8"
-DET2.NDIT.SKY                  "8"
-SEQ.HWPOFF                     "0.0"
-SEQ.OBSSEQ                     "O S"
-SEQ.RELOFF.X                   "0.0"
-SEQ.RELOFF.Y                   "0.0"
-SEQ.SKY.X                      "2000"
-SEQ.SKY.Y                      "2000"
-
-#TPL.NAME                       "GRAVITY Team test"
-#INS.SPEC.POL                   "SAME"
-#INS.SPEC.RES                   "SAME"
-#DET1.DIT                       "0.7"
-#DET1.NDIT                      "0"
+TPL.ID                     "GRAVITY_dual_obs_exp";
+TPL.NAME                     "Dual Field Science";
+DET1.DIT                                    "0.7";
+DET1.NDIT                                     "0";
+DET2.DIT                                    "0.3";
+DET2.NDIT.OBJECT                             "32";
+DET2.NDIT.SKY                                "32";
+SEQ.COMMENT                          "no_comment";
+SEQ.HWPOFF                                  "0.0";
+SEQ.OBSSEQ                                  "O S";
+SEQ.RELOFF.X                                "0.0";
+SEQ.RELOFF.Y                                "0.0";
+SEQ.SKY.X                                  "2000";
+SEQ.SKY.Y                                  "2000";
+#SEQ.SYNCHRO                                  "T";  #JS: Not sure whether this is correct
+INS.SPEC.RES                              "SAME";
+INS.SPEC.POL                              "SAME";
+#DPR.CATG                                  "TEST";  #JS: Not sure whether this is correct
