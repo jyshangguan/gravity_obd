@@ -1,8 +1,8 @@
 # Observation Block description follows
-OBS.ID                         "2229478";
+OBS.ID                              "-1";
 OBS.DID            "ESO-VLT-DIC.OBS-2.0";
 OBS.GRP                              "0";
 OBS.NAME                       "SCIENCE";
 OBS.PI-COI.ID                        "0";
 OBS.PI-COI.NAME                 "CONDOR";
-OBS.PROG.ID             "0103.B-0032(C)";
+OBS.PROG.ID                           "";

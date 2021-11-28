@@ -1,0 +1,77 @@
+# acquisition
+TPL.ID                         "GRAVITY_dual_acq"
+TPL.NAME                       ""
+TPL.NEXP                       "1"
+TPL.MODE                       "ACQUISITION"
+DET1.DIT                       "0.7"
+
+# Target stars
+TEL.TARG.ALPHA                 ""
+TEL.TARG.DELTA                 ""
+TEL.TARG.PMA                   "0.000"
+TEL.TARG.PMD                   "0.000"
+TEL.TARG.RADVEL                "0"
+TEL.TARG.WLENGTH               "2200"
+TEL.TARG.PARALLAX              "0"
+TEL.TARG.ALPHA.SC              ""
+TEL.TARG.DELTA.SC              ""
+TEL.TARG.PMA.SC                "0.000"
+TEL.TARG.PMD.SC                "0.000"
+TEL.TARG.RADVEL.SC             "0"
+TEL.TARG.PARALLAX.SC           "0"
+
+# Sequence
+SEQ.FT.ROBJ.NAME               ""
+SEQ.FT.ROBJ.MAG                ""
+SEQ.FT.ROBJ.DIAMETER           "0.0"  # mas
+SEQ.FT.ROBJ.VIS                "1"
+SEQ.FT.MODE                    "AUTO"
+SEQ.INS.SOBJ.NAME              ""
+SEQ.INS.SOBJ.MAG               ""
+SEQ.INS.SOBJ.DIAMETER          "0.0"  # mas
+SEQ.INS.SOBJ.VIS               "1"
+SEQ.INS.SOBJ.DIAMETER          "0.0"
+SEQ.INS.SOBJ.X                 ""  # mas
+SEQ.INS.SOBJ.Y                 ""  # mas
+SEQ.FI.HMAG                    ""
+INS.SPEC.RES                   "MED"
+INS.FT.POL                     "IN"
+INS.SPEC.POL                   "IN"
+
+# AO guide star
+COU.AG.GSSOURCE                "SCIENCE"
+COU.AG.ALPHA                   "00:00:00.000"
+COU.AG.DELTA                   "00:00:00.000"
+COU.GS.MAG                     "6.5"
+COU.AG.PMA                     "0.0"
+COU.AG.PMD                     "0.0"
+COU.AG.TYPE                    "DEFAULT"
+ISS.BASELINE                   "astrometric"
+ISS.VLTITYPE                   "astrometry"
+
+## Use default value for these
+# DET2.DIT                       "1"
+# DET2.NDIT.SKY                  "2"
+# INS.STSOFFANG                  "90"
+# COU.GS.FWHM                    "0."
+# COU.GS.WAVELEN                 "2200"
+# SEQ.ALIGN                      "F"
+# SEQ.FRINGETRACK                "T"
+# SEQ.PICKFT                     "T"
+# SEQ.PRESET                     "T"
+# SEQ.TAKESKY                    "T"
+# SEQ.TRACKFI                    "T"
+# SEQ.TRACKPUP                   "T"
+# SEQ.TRACKROT                   "T"
+# SEQ.TRACKSC                    "T"
+# DEL.REF.MODE                   "AUTO"
+# DEL.REF.NAME                   "2"
+# DEL.REF.OPL                    "250"
+# SEQ.FI.WIN                     "30"
+# SEQ.PICKSC                     "F"
+# SEQ.INS.SOBJ.PMA               "0"
+# SEQ.INS.SOBJ.PMD               "0"
+# SEQ.INS.SOBJ.RADVEL            "0"
+# SEQ.SKY.X                      "2000"
+# SEQ.SKY.Y                      "2000"
+
