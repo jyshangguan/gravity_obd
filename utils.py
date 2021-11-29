@@ -8,7 +8,7 @@ from astropy.coordinates import SkyCoord, Distance
 
 __all__ = ['modulepath', 'load_obd_module', 'write_obd', 'coord_offset', 'cal_offset', 
            'cal_coord_motion', 'sc_offset', 'get_coord_plain', 'get_coord_colon',
-           'get_pos_dict', 'get_ao_dict']
+           'get_pos_current', 'get_pos_J2000', 'get_pos_ao', 'read_coordinate']
 
 #-> Obtain the current path
 pathList = os.path.abspath(__file__).split("/")
@@ -305,7 +305,7 @@ def get_coord_colon(c):
     return ra_colon, dec_colon
 
 
-def get_pos_dict(ra, dec, pma, pmd, parallax, radvel):
+def get_pos_current(ra, dec, pma, pmd, parallax, radvel):
     '''
     Get the target position dict for the sequencer.
     
@@ -329,14 +329,46 @@ def get_pos_dict(ra, dec, pma, pmd, parallax, radvel):
     pos : dict
         The dict of the position information of the target.
     '''
-    c = SkyCoord(ra, dec, frame='icrs', unit='deg')
+    #c = SkyCoord(ra, dec, frame='icrs', unit='deg')
+    c = read_coordinate(ra, dec)
     c_cur = cal_coord_motion(c, pma*u.mas/u.yr, pmd*u.mas/u.yr, parallax*u.mas, radvel*u.km/u.s)
     ra_hms, dec_dms = get_coord_plain(c_cur)
     pos = dict(ra=ra_hms, dec=dec_dms, pma=pma, pmd=pmd, parallax=parallax, radvel=radvel)
     return pos
 
 
-def get_ao_dict(ra, dec, pma, pmd, parallax, radvel):
+def get_pos_J2000(ra, dec, pma, pmd, parallax, radvel):
+    '''
+    Get the target position dict for the sequencer.
+    
+    Parameters
+    ----------
+    ra : float
+        RA in degree.
+    dec : float
+        DEC in degree.
+    pma : float
+        Proper motion in mas.
+    pmd : float
+        Proper motion in mas.
+    plx : float
+        Parallax in mas.
+    radvel : float
+        Radial velocity in km/s.
+        
+    Returns
+    -------
+    pos : dict
+        The dict of the position information of the target.
+    '''
+    #c = SkyCoord(ra, dec, frame='icrs', unit='deg')
+    c = read_coordinate(ra, dec)
+    ra_hms, dec_dms = get_coord_plain(c)
+    pos = dict(ra=ra_hms, dec=dec_dms, pma=pma, pmd=pmd, parallax=parallax, radvel=radvel)
+    return pos
+
+
+def get_pos_ao(ra, dec, pma, pmd, parallax, radvel):
     '''
     Get the AO source position dict for the sequencer.
     
@@ -360,8 +392,33 @@ def get_ao_dict(ra, dec, pma, pmd, parallax, radvel):
     pos : dict
         The dict of the position information of the target.
     '''
-    c = SkyCoord(ra, dec, frame='icrs', unit='deg')
+    #c = SkyCoord(ra, dec, frame='icrs', unit='deg')
+    c = read_coordinate(ra, dec)
     c_cur = cal_coord_motion(c, pma*u.mas/u.yr, pmd*u.mas/u.yr, parallax*u.mas, radvel*u.km/u.s)
     ra_hms, dec_dms = get_coord_colon(c_cur)
     pos = dict(ra=ra_hms, dec=dec_dms, pma=pma, pmd=pmd, parallax=parallax, radvel=radvel)
     return pos
+    
+    
+def read_coordinate(ra, dec):
+    '''
+    Read in the coordinate, either in degree or hourangle. Only use ICRS frame.
+    
+    Parameters
+    ----------
+    ra : float or string
+        The right ascension (degree or HH:MM:SS).
+    dec : float or string
+        The declination (degree or DD:MM:SS).
+    
+    Returns
+    -------
+    c : SkyCoord
+        The coordinate object.
+    '''
+    if isinstance(ra, str):
+        assert isinstance(dec, str)
+        c = SkyCoord('{0} {1}'.format(ra, dec), frame='icrs', unit=(u.hourangle, u.deg))
+    else:
+        c = SkyCoord(ra, dec, frame='icrs', unit='deg')
+    return c

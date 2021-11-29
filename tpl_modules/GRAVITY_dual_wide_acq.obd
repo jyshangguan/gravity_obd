@@ -1,24 +1,24 @@
 # acquisition
-TPL.ID                         "GRAVITY_dual_acq"
+TPL.ID                         "Gravity_dual_wide_acq"
 TPL.NAME                       ""
 TPL.NEXP                       "1"
 TPL.MODE                       "ACQUISITION"
 DET1.DIT                       "0.7"
 
 # Target stars
-TEL.TARG.ALPHA                 ""
-TEL.TARG.DELTA                 ""
+TEL.TARG.ALPHA                 ""          # SC target J2000 coordinate
+TEL.TARG.DELTA                 ""          # SC target J2000 coordinate
 TEL.TARG.PMA                   "0.000"
 TEL.TARG.PMD                   "0.000"
 TEL.TARG.RADVEL                "0"
 TEL.TARG.WLENGTH               "2200"
 TEL.TARG.PARALLAX              "0"
-TEL.TARG.ALPHA.SC              ""
-TEL.TARG.DELTA.SC              ""
-TEL.TARG.PMA.SC                "0.000"
-TEL.TARG.PMD.SC                "0.000"
-TEL.TARG.RADVEL.SC             "0"
-TEL.TARG.PARALLAX.SC           "0"
+FT.TARG.ALPHA                  ""          # FT target J2000 coordinate
+FT.TARG.DELTA                  ""          # FT target J2000 coordinate
+FT.TARG.PMA                    "0.000"
+FT.TARG.PMD                    "0.000"
+FT.TARG.RADVEL                 "0"
+FT.TARG.PARALLAX               "0"
 
 # Sequence
 SEQ.FT.ROBJ.NAME               ""
