@@ -16,16 +16,20 @@ def gen_OBD_dual(obd_name, ra_ft, dec_ft, pma_ft, pmd_ft, parallax_ft, radvel_ft
                  ao_type='ADAPT_OPT', baseline='astrometric', vltitype='astrometry'):
     '''
     Generate the OBD for the dual field observation.
+    
+    Notes
+    -----
+    We need to provide the on-sky position of the targets for normal dual field mode.
     '''
     # Pos dict
-    ft_pos = get_pos_dict(ra=ra_ft, dec=dec_ft, pma=pma_ft, pmd=pmd_ft, parallax=plx_ft, radvel=radvel_ft)
-    sc_pos = get_pos_dict(ra=ra_sc, dec=dec_sc, pma=pma_sc, pmd=pmd_sc, parallax=plx_sc, radvel=radvel_sc)
+    ft_pos = get_pos_dict(ra=ra_ft, dec=dec_ft, pma=pma_ft, pmd=pmd_ft, parallax=parallax_ft, radvel=radvel_ft)
+    sc_pos = get_pos_dict(ra=ra_sc, dec=dec_sc, pma=pma_sc, pmd=pmd_sc, parallax=parallax_sc, radvel=radvel_sc)
     
     # offset
     c_ft = SkyCoord(ra_ft, dec_ft, frame='icrs', unit='deg')
     c_sc = SkyCoord(ra_sc, dec_sc, frame='icrs', unit='deg')
-    sobj_x, sobj_y = sc_offset(c_sc, c_ft, pma_sc=pma_sc, pmd_sc=pmd_sc, plx_sc=plx_sc, radvel_sc=radvel_sc,
-                               pma_ft=pma_ft, pmd_ft=pmd_ft, plx_ft=plx_ft, radvel_ft=radvel_ft)
+    sobj_x, sobj_y = sc_offset(c_sc, c_ft, pma_sc=pma_sc, pmd_sc=pmd_sc, plx_sc=parallax_sc, radvel_sc=radvel_sc,
+                               pma_ft=pma_ft, pmd_ft=pmd_ft, plx_ft=parallax_ft, radvel_ft=radvel_ft)
     sobj_x = np.round(sobj_x.value, decimals=3)
     sobj_y = np.round(sobj_y.value, decimals=3)
     
