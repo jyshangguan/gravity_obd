@@ -108,9 +108,10 @@ def gen_OBD_wide(obd_name, ra_ft, dec_ft, pma_ft, pmd_ft, parallax_ft, radvel_ft
     
     
 def gen_OBD_dual(obd_name, ra_ft, dec_ft, pma_ft, pmd_ft, parallax_ft, radvel_ft, G_ft, K_ft, H_ft, 
-                 sobj_x, sobj_y, K_sc, acq_dit, dit, ndit, obsseq, obsid='00001', runID='60.A-9102(I)', 
-                 ft_name='s_ft', sc_name='s_sc', ft_mode='AUTO', res='MED', pol='IN', 
-                 ao_type='ADAPT_OPT', baseline='astrometric', vltitype='astrometry'):
+                 sobj_x, sobj_y, K_sc, dit, ndit, obsseq, acq_dit=0.7, reloff_x=0.0, reloff_y=0.0, 
+                 sky_x=2000, sky_y=2000, ft_name='s_ft', sc_name='s_sc', ft_mode='AUTO', res='MED', 
+                 pol='IN', met_mode='ON', obsid='00001', runID='60.A-9102(I)', ao_type='ADAPT_OPT', 
+                 baseline='astrometric', vltitype='astrometry'):
     '''
     Generate the OBD for the dual field observation.
     
@@ -123,15 +124,18 @@ def gen_OBD_dual(obd_name, ra_ft, dec_ft, pma_ft, pmd_ft, parallax_ft, radvel_ft
     
     acq_kwargs = dict(acq_dit=acq_dit, ft_pos=ft_pos, ft_name=ft_name, ft_kmag=K_ft, ft_mode=ft_mode, 
                       sc_name=sc_name, sc_kmag=K_sc, sobj_x=sobj_x, sobj_y=sobj_y, acq_hmag=H_ft, res=res, pol=pol, 
-                      ao_pos=None, ao_mag=G_ft, ao_type=ao_type, baseline=baseline, vltitype=vltitype)
-   
-    obsseq = obsseq.strip()
-    obsseq = obsseq.replace(' ', '')
+                      met_mode=met_mode, ao_pos=None, ao_mag=G_ft, ao_type=ao_type, baseline=baseline, vltitype=vltitype)
+    
+    assert isinstance(obsseq, list), 'Require obsseq to be a list!'
     tplParList = []
     for obs in obsseq:
-        if obs not in ['S', 'O']:
-            raise KeyError('Cannot recognize {} in the sequence!'.format(obs))
-        tplParList.append(('exposure_dual', dict(acq_dit=acq_dit, dit=dit, ndit=ndit, obsseq=obs)))
+        if obs == 'swap':
+            tplParList.append(('swap', dict()))
+        else:
+            tplParList.append(('exposure_dual', 
+                               dict(acq_dit=acq_dit, dit=dit, ndit=ndit, obsseq=obs, 
+                                    reloff_x=reloff_x, reloff_y=reloff_y, sky_x=sky_x, 
+                                    sky_y=sky_y)))
     
     obd_dict = sequencer(obsid=obsid, runID=runID, acq_mode='dual', acq_kwargs=acq_kwargs, tplParList=tplParList)
     write_obd(obd_name, obd_dict)
@@ -542,7 +546,6 @@ def add_acquisition_dual(obd_dict, acq_dit='0.7', ft_pos={}, ft_name='', ft_kmag
     d['SEQ.INS.SOBJ.X'] = sobj_x
     d['SEQ.INS.SOBJ.Y'] = sobj_y
     d['SEQ.FI.HMAG'] = acq_hmag
-    d['SEQ.MET.MODE'] = met_mode
     d['INS.SPEC.RES'] = res
     d['INS.FT.POL'] = pol
     d['INS.SPEC.POL'] = pol
@@ -554,6 +557,10 @@ def add_acquisition_dual(obd_dict, acq_dit='0.7', ft_pos={}, ft_name='', ft_kmag
     d['COU.AG.PMA'] = ao_pma
     d['COU.AG.PMD'] = ao_pmd
 
+    if met_mode not in ['ON', 'FAINT']:
+        raise KeyError('met_mode has to be "ON" or "FAINT"!')
+    d['SEQ.MET.MODE'] = met_mode
+    
     if ao_type not in ['DEFAULT', 'AUTO_GUIDE', 'ADAPT_OPT', 'ADAPT_OPT_TCCD', 'IR_AO_OFFAXIS']:
         raise KeyError('Cannot recognize ao_type ({0})!'.format(ao_type))
     d['COU.AG.TYPE'] = ao_type
