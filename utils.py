@@ -329,11 +329,15 @@ def get_pos_current(ra, dec, pma, pmd, parallax, radvel):
     pos : dict
         The dict of the position information of the target.
     '''
-    #c = SkyCoord(ra, dec, frame='icrs', unit='deg')
     c = read_coordinate(ra, dec)
     c_cur = cal_coord_motion(c, pma*u.mas/u.yr, pmd*u.mas/u.yr, parallax*u.mas, radvel*u.km/u.s)
     ra_hms, dec_dms = get_coord_plain(c_cur)
-    pos = dict(ra=ra_hms, dec=dec_dms, pma=pma, pmd=pmd, parallax=parallax, radvel=radvel)
+    pos = dict(ra=ra_hms, 
+               dec=dec_dms, 
+               pma='{0:.5f}'.format(pma*1e-3), 
+               pmd='{0:.5f}'.format(pmd*1e-3), 
+               parallax='{0:.5f}'.format(parallax*1e-3), 
+               radvel=radvel)
     return pos
 
 
@@ -361,10 +365,14 @@ def get_pos_J2000(ra, dec, pma, pmd, parallax, radvel):
     pos : dict
         The dict of the position information of the target.
     '''
-    #c = SkyCoord(ra, dec, frame='icrs', unit='deg')
     c = read_coordinate(ra, dec)
     ra_hms, dec_dms = get_coord_plain(c)
-    pos = dict(ra=ra_hms, dec=dec_dms, pma=pma, pmd=pmd, parallax=parallax, radvel=radvel)
+    pos = dict(ra=ra_hms, 
+               dec=dec_dms, 
+               pma='{0:.5f}'.format(pma*1e-3), 
+               pmd='{0:.5f}'.format(pmd*1e-3), 
+               parallax='{0:.5f}'.format(parallax*1e-3), 
+               radvel=radvel)
     return pos
 
 
@@ -392,11 +400,15 @@ def get_pos_ao(ra, dec, pma, pmd, parallax, radvel):
     pos : dict
         The dict of the position information of the target.
     '''
-    #c = SkyCoord(ra, dec, frame='icrs', unit='deg')
     c = read_coordinate(ra, dec)
     c_cur = cal_coord_motion(c, pma*u.mas/u.yr, pmd*u.mas/u.yr, parallax*u.mas, radvel*u.km/u.s)
     ra_hms, dec_dms = get_coord_colon(c_cur)
-    pos = dict(ra=ra_hms, dec=dec_dms, pma=pma, pmd=pmd, parallax=parallax, radvel=radvel)
+    pos = dict(ra=ra_hms, 
+               dec=dec_dms, 
+               pma='{0:.5f}'.format(pma*1e-3), 
+               pmd='{0:.5f}'.format(pmd*1e-3), 
+               parallax='{0:.5f}'.format(parallax*1e-3), 
+               radvel=radvel)
     return pos
     
     

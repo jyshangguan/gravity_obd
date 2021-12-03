@@ -1,77 +1,86 @@
 # acquisition
-TPL.ID                         "Gravity_dual_wide_acq"
-TPL.NAME                       ""
-TPL.NEXP                       "1"
-TPL.MODE                       "ACQUISITION"
-DET1.DIT                       "0.7"
+TPL.ID                    "GRAVITY_dual_wide_acq";
+TPL.NAME          "GRAVITY Wide Mode Acquisition";
+DET1.DIT                                    "0.7";
+DET2.DIT                                    "0.3";
+DET2.NDIT.SKY                                 "1";
 
 # Target stars
-TEL.TARG.ALPHA                 ""          # SC target J2000 coordinate
-TEL.TARG.DELTA                 ""          # SC target J2000 coordinate
-TEL.TARG.PMA                   "0.000"
-TEL.TARG.PMD                   "0.000"
-TEL.TARG.RADVEL                "0"
-TEL.TARG.WLENGTH               "2200"
-TEL.TARG.PARALLAX              "0"
-FT.TARG.ALPHA                  ""          # FT target J2000 coordinate
-FT.TARG.DELTA                  ""          # FT target J2000 coordinate
-FT.TARG.PMA                    "0.000"
-FT.TARG.PMD                    "0.000"
-FT.TARG.RADVEL                 "0"
-FT.TARG.PARALLAX               "0"
+TEL.TARG.ADDVELALPHA                          "0";
+TEL.TARG.ADDVELDELTA                          "0";
+TEL.TARG.ALPHA                                 "";  # SC target J2000 coordinate
+TEL.TARG.COORDTYPE                            "M";
+TEL.TARG.DELTA                                 "";  # SC target J2000 coordinate
+TEL.TARG.EPOCH                             "2000";
+TEL.TARG.EPOCHSYSTEM                          "J";
+TEL.TARG.EQUINOX                           "2000";
+TEL.TARG.PARALLAX                             "0";
+TEL.TARG.PMA                                  "0";
+TEL.TARG.PMD                                  "0";
+TEL.TARG.RADVEL                               "0";
+TEL.TARG.WLENGTH                           "2200";
+SEQ.FT.ROBJ.ALPHA                              "";  # FT target J2000 coordinate
+SEQ.FT.ROBJ.DELTA                              "";  # FT target J2000 coordinate
+SEQ.FT.ROBJ.PMA                               "0";
+SEQ.FT.ROBJ.PMD                               "0";
+SEQ.FT.ROBJ.RADVEL                            "0";
+SEQ.FT.ROBJ.PARALLAX                          "0";
 
 # Sequence
-SEQ.FT.ROBJ.NAME               ""
-SEQ.FT.ROBJ.MAG                ""
-SEQ.FT.ROBJ.DIAMETER           "0.0"  # mas
-SEQ.FT.ROBJ.VIS                "1"
-SEQ.FT.MODE                    "AUTO"
-SEQ.INS.SOBJ.NAME              ""
-SEQ.INS.SOBJ.MAG               ""
-SEQ.INS.SOBJ.DIAMETER          "0.0"  # mas
-SEQ.INS.SOBJ.VIS               "1"
-SEQ.INS.SOBJ.DIAMETER          "0.0"
-SEQ.INS.SOBJ.X                 ""  # mas
-SEQ.INS.SOBJ.Y                 ""  # mas
-SEQ.FI.HMAG                    ""
-INS.SPEC.RES                   "MED"
-INS.FT.POL                     "IN"
-INS.SPEC.POL                   "IN"
+SEQ.FT.ROBJ.NAME                               "";
+SEQ.FT.ROBJ.MAG                                "";
+SEQ.FT.ROBJ.DIAMETER                        "0.0";  # mas
+SEQ.FT.ROBJ.VIS                               "1";
+SEQ.FT.MODE                                "AUTO";
+SEQ.INS.SOBJ.NAME                              "";
+SEQ.INS.SOBJ.MAG                               "";
+SEQ.INS.SOBJ.DIAMETER                       "0.0";  # mas
+SEQ.INS.SOBJ.VIS                              "1";
+SEQ.INS.SOBJ.X                                 "";  # mas
+SEQ.INS.SOBJ.Y                                 "";  # mas
+SEQ.FI.HMAG                                    "";
+SEQ.ALIGN                                     "F";
+SEQ.FI.WIN                                   "30";
+SEQ.FRINGETRACK                               "T";
+SEQ.FTOPT                                     "T";
+SEQ.INS.SOBJ.PMA                              "0";
+SEQ.INS.SOBJ.PMD                              "0";
+SEQ.INS.SOBJ.RADVEL                           "0";
+SEQ.LASERGUID                                 "F";
+SEQ.OFFANG                                    "F";
+SEQ.PICKFT                                    "T";
+SEQ.PICKSC                                    "A";
+SEQ.PRESET                                    "T";
+SEQ.SKY.X                                  "2000";
+SEQ.SKY.Y                                  "2000";
+SEQ.TAKESKY                                   "T";
+SEQ.TRACKFI                                   "T";
+SEQ.TRACKPUP                                  "T";
+SEQ.TRACKROT                                  "T";
+SEQ.TRACKSC                                   "T";
+SEQ.MET.MODE                                 "ON";  # The new metrology mode, ON, OFF, FAINT
+INS.SPEC.RES                                "MED";
+INS.FT.POL                                   "IN";
+INS.SPEC.POL                                 "IN";
+INS.ACQ.FILTER                             "AUTO";
+INS.STSOFFANG                                "90";
 
 # AO guide star
-COU.AG.GSSOURCE                "SCIENCE"
-COU.AG.ALPHA                   "00:00:00.000"
-COU.AG.DELTA                   "00:00:00.000"
-COU.GS.MAG                     "6.5"
-COU.AG.PMA                     "0.0"
-COU.AG.PMD                     "0.0"
-COU.AG.TYPE                    "DEFAULT"
-ISS.BASELINE                   "astrometric"
-ISS.VLTITYPE                   "astrometry"
-
-## Use default value for these
-# DET2.DIT                       "1"
-# DET2.NDIT.SKY                  "2"
-# INS.STSOFFANG                  "90"
-# COU.GS.FWHM                    "0."
-# COU.GS.WAVELEN                 "2200"
-# SEQ.ALIGN                      "F"
-# SEQ.FRINGETRACK                "T"
-# SEQ.PICKFT                     "T"
-# SEQ.PRESET                     "T"
-# SEQ.TAKESKY                    "T"
-# SEQ.TRACKFI                    "T"
-# SEQ.TRACKPUP                   "T"
-# SEQ.TRACKROT                   "T"
-# SEQ.TRACKSC                    "T"
-# DEL.REF.MODE                   "AUTO"
-# DEL.REF.NAME                   "2"
-# DEL.REF.OPL                    "250"
-# SEQ.FI.WIN                     "30"
-# SEQ.PICKSC                     "F"
-# SEQ.INS.SOBJ.PMA               "0"
-# SEQ.INS.SOBJ.PMD               "0"
-# SEQ.INS.SOBJ.RADVEL            "0"
-# SEQ.SKY.X                      "2000"
-# SEQ.SKY.Y                      "2000"
-
+AOS.AO.MODE                             "FULL_AO";
+COU.AG.GSSOURCE                         "SCIENCE";
+COU.AG.ALPHA                       "00:00:00.000";
+COU.AG.DELTA                       "00:00:00.000";
+COU.GS.MAG                                  "0.0";
+COU.AG.PMA                                  "0.0";
+COU.AG.PMD                                  "0.0";
+COU.AG.OBJCNT                                 "F";
+COU.AG.OPTIMIZE                               "F";
+COU.AG.START                                  "F";
+COU.AG.TYPE                           "ADAPT_OPT";
+# COU.GS.FWHM                                 "0.0";  #JS: Not sure whether this is correct
+# COU.GS.WAVELEN                                "0";  #JS: Not sure whether this is correct
+DEL.REF.MODE                               "AUTO";
+DEL.REF.NAME                                  "1";
+DEL.REF.OPL                                 "250";
+ISS.BASELINE                        "astrometric";
+ISS.VLTITYPE                         "astrometry";

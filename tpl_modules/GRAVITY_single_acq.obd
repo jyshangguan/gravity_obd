@@ -46,6 +46,7 @@ SEQ.TRACKFI                                   "T";
 SEQ.TRACKPUP                                  "T";
 SEQ.TRACKROT                                  "T";
 SEQ.TRACKSC                                   "F";
+SEQ.MET.MODE                                 "ON";  # The new metrology mode, ON, OFF, FAINT
 INS.SPEC.RES                                "MED";
 INS.FT.POL                                   "IN";
 INS.SPEC.POL                                 "IN";

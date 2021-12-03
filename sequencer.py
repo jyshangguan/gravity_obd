@@ -4,14 +4,111 @@ from astropy.coordinates import SkyCoord
 from astropy import units as u
 from .utils import *
 
-__all__ = ['gen_OBD_dual', 'gen_OBD_single', 
+__all__ = ['gen_OBD_dual', 'gen_OBD_single', 'gen_OBD_wide',
            'sequencer', 'initiate_obd', 'add_acquisition_dual', 'add_acquisition_single',
            'add_exposure_dual', 'add_exposure_single', 'add_swap']
 
-
-def gen_OBD_dual(obd_name, ra_ft, dec_ft, pma_ft, pmd_ft, parallax_ft, radvel_ft, G_ft, K_ft, H_ft, 
+def gen_OBD_wide(obd_name, ra_ft, dec_ft, pma_ft, pmd_ft, parallax_ft, radvel_ft, G_ft, K_ft, H_ft, 
                  ra_sc, dec_sc, pma_sc, pmd_sc, parallax_sc, radvel_sc, K_sc, 
-                 acq_dit, dit, ndit, obsseq, obsid='00001', runID='Test 001', 
+                 acq_dit, dit, ndit, obsseq, obsid='00001', runID='60.A-9102(I)', 
+                 ft_name='s_ft', sc_name='s_sc', ft_mode='AUTO', res='MED', pol='IN', 
+                 ao_type='ADAPT_OPT', baseline='astrometric', vltitype='astrometry'):
+    '''
+    Generate the OBD for the wide field observation.
+    
+    Parameters
+    ----------
+    ra_ft : float
+        The right ascension of the ft source (degree or HH:MM:SS).
+    dec_ft : float
+        The declination of the ft source (degree or DD:MM:SS).
+    pma_ft : float
+        Proper motion in mas.
+    pmd_ft : float
+        Proper motion in mas.
+    parallax_ft : float
+        Parallax in mas.
+    radvel_ft : float
+        Radial velocity in km/s.
+    G_ft : float
+        The optical magnitude.
+    K_ft : float
+        The K band magnitude.
+    H_ft : float
+        The H band magnitude.
+    ra_sc : float
+        The right ascension of the ft source (degree or HH:MM:SS).
+    dec_sc : float
+        The declination of the ft source (degree or DD:MM:SS).
+    pma_sc : float
+        Proper motion in mas.
+    pmd_sc : float
+        Proper motion in mas.
+    parallax_sc : float
+        Parallax in mas.
+    radvel_sc : float
+        Radial velocity in km/s.
+    acq_dit : float
+        The DIT on the acquisition camera, units: second.
+    dit : float
+        The DIT of the science exposure.
+    ndit : int
+        The number of DITs of the science exposure.
+    obsseq : string
+        The observation sequence.
+    obsid : string
+        The ID of the OB.
+    runID : string
+        The ID of the run.
+    ft_name : string (default: 's_ft')
+        The name of the FT target.
+    sc_name : string (default: 's_sc') 
+        The name of the SC target.
+    ft_mode : string (default: 'AUTO')
+    res : string (default: 'MED') 
+        The spectral resolution.
+    pol : string (default: 'IN')
+    ao_type : string (default: 'ADAPT_OPT')
+        The type of the AO, 'DEFAULT', 'AUTO_GUIDE', 'ADAPT_OPT', 'ADAPT_OPT_TCCD', 'IR_AO_OFFAXIS'.
+    baseline : string (default: 'astrometric')
+        The baseline types, 'small', 'medium', 'large', 'astrometric', 'UTs'.
+    vltitype : string (default: 'astrometry')
+        Not important, 'snapshot', 'imaging', 'time_series', 'astrometry'.
+    
+    Returns
+    -------
+    None
+    '''
+    # Pos dict
+    ft_pos = get_pos_J2000(ra=ra_ft, dec=dec_ft, pma=pma_ft, pmd=pmd_ft, parallax=parallax_ft, radvel=radvel_ft)
+    sc_pos = get_pos_J2000(ra=ra_sc, dec=dec_sc, pma=pma_sc, pmd=pmd_sc, parallax=parallax_sc, radvel=radvel_sc)
+    
+    # offset
+    c_ft = SkyCoord(ra_ft, dec_ft, frame='icrs', unit='deg')
+    c_sc = SkyCoord(ra_sc, dec_sc, frame='icrs', unit='deg')
+    sobj_x, sobj_y = sc_offset(c_sc, c_ft, pma_sc=pma_sc, pmd_sc=pmd_sc, plx_sc=parallax_sc, radvel_sc=radvel_sc,
+                               pma_ft=pma_ft, pmd_ft=pmd_ft, plx_ft=parallax_ft, radvel_ft=radvel_ft)
+    sobj_x = np.round(sobj_x.value, decimals=3)
+    sobj_y = np.round(sobj_y.value, decimals=3)
+    
+    acq_kwargs = dict(acq_dit=acq_dit, ft_pos=ft_pos, sc_pos=sc_pos, ft_name=ft_name, ft_kmag=K_ft, ft_mode=ft_mode, 
+                      sc_name=sc_name, sc_kmag=K_sc, sobj_x=sobj_x, sobj_y=sobj_y, acq_hmag=H_ft, res=res, pol=pol, 
+                      ao_pos=None, ao_mag=G_ft, ao_type=ao_type, met_mode='OFF', baseline=baseline, vltitype=vltitype)
+   
+    obsseq = obsseq.strip()
+    obsseq = obsseq.replace(' ', '')
+    tplParList = []
+    for obs in obsseq:
+        if obs not in ['S', 'O']:
+            raise KeyError('Cannot recognize {} in the sequence!'.format(obs))
+        tplParList.append(('exposure_dual', dict(acq_dit=acq_dit, dit=dit, ndit=ndit, obsseq=obs)))
+    
+    obd_dict = sequencer(obsid=obsid, runID=runID, acq_mode='wide', acq_kwargs=acq_kwargs, tplParList=tplParList)
+    write_obd(obd_name, obd_dict)
+    
+    
+def gen_OBD_dual(obd_name, ra_ft, dec_ft, pma_ft, pmd_ft, parallax_ft, radvel_ft, G_ft, K_ft, H_ft, 
+                 sobj_x, sobj_y, K_sc, acq_dit, dit, ndit, obsseq, obsid='00001', runID='60.A-9102(I)', 
                  ft_name='s_ft', sc_name='s_sc', ft_mode='AUTO', res='MED', pol='IN', 
                  ao_type='ADAPT_OPT', baseline='astrometric', vltitype='astrometry'):
     '''
@@ -23,17 +120,8 @@ def gen_OBD_dual(obd_name, ra_ft, dec_ft, pma_ft, pmd_ft, parallax_ft, radvel_ft
     '''
     # Pos dict
     ft_pos = get_pos_current(ra=ra_ft, dec=dec_ft, pma=pma_ft, pmd=pmd_ft, parallax=parallax_ft, radvel=radvel_ft)
-    sc_pos = get_pos_current(ra=ra_sc, dec=dec_sc, pma=pma_sc, pmd=pmd_sc, parallax=parallax_sc, radvel=radvel_sc)
     
-    # offset
-    c_ft = SkyCoord(ra_ft, dec_ft, frame='icrs', unit='deg')
-    c_sc = SkyCoord(ra_sc, dec_sc, frame='icrs', unit='deg')
-    sobj_x, sobj_y = sc_offset(c_sc, c_ft, pma_sc=pma_sc, pmd_sc=pmd_sc, plx_sc=parallax_sc, radvel_sc=radvel_sc,
-                               pma_ft=pma_ft, pmd_ft=pmd_ft, plx_ft=parallax_ft, radvel_ft=radvel_ft)
-    sobj_x = np.round(sobj_x.value, decimals=3)
-    sobj_y = np.round(sobj_y.value, decimals=3)
-    
-    acq_kwargs = dict(acq_dit=acq_dit, ft_pos=ft_pos, sc_pos=sc_pos, ft_name=ft_name, ft_kmag=K_ft, ft_mode=ft_mode, 
+    acq_kwargs = dict(acq_dit=acq_dit, ft_pos=ft_pos, ft_name=ft_name, ft_kmag=K_ft, ft_mode=ft_mode, 
                       sc_name=sc_name, sc_kmag=K_sc, sobj_x=sobj_x, sobj_y=sobj_y, acq_hmag=H_ft, res=res, pol=pol, 
                       ao_pos=None, ao_mag=G_ft, ao_type=ao_type, baseline=baseline, vltitype=vltitype)
    
@@ -50,7 +138,7 @@ def gen_OBD_dual(obd_name, ra_ft, dec_ft, pma_ft, pmd_ft, parallax_ft, radvel_ft
 
 
 def gen_OBD_single(obd_name, ra_sc, dec_sc, pma_sc, pmd_sc, parallax_sc, radvel_sc, K_sc, H_sc, G_sc, 
-                   acq_dit, dit, ndit, obsseq, obsid='00001', runID='Test 001', sc_name='s_sc', 
+                   acq_dit, dit, ndit, obsseq, obsid='00001', runID='60.A-9102(I)', sc_name='s_sc', 
                    ft_mode='AUTO', res='MED', pol='IN', ao_type='ADAPT_OPT', baseline='astrometric', 
                    vltitype='astrometry'):
     '''
@@ -78,7 +166,7 @@ def gen_OBD_single(obd_name, ra_sc, dec_sc, pma_sc, pmd_sc, parallax_sc, radvel_
     write_obd(obd_name, obd_dict)
     
 
-def sequencer(obsid=None, runID='GRAVITY_Test', now_str=None, acq_mode='dual', acq_kwargs={}, tplParList=[]):
+def sequencer(obsid=None, runID='60.A-9102(I)', now_str=None, acq_mode='dual', acq_kwargs={}, tplParList=[]):
     '''
     The sequencer of the OBD.
     
@@ -129,7 +217,7 @@ def sequencer(obsid=None, runID='GRAVITY_Test', now_str=None, acq_mode='dual', a
     return obd_dict
 
 
-def initiate_obd(obsid=None, runID='GRAVITY_Test', now_str=None):
+def initiate_obd(obsid=None, runID='60.A-9102(I)', now_str=None):
     '''
     Add the PAF and OBS modules.
     
@@ -168,7 +256,7 @@ def initiate_obd(obsid=None, runID='GRAVITY_Test', now_str=None):
 def add_acquisition_wide(obd_dict, acq_dit='0.7', ft_pos={}, sc_pos={}, ft_name='', ft_kmag='', 
                          ft_mode='AUTO', sc_name='', sc_kmag='', sobj_x='', sobj_y='', acq_hmag='', 
                          res='MED', pol='IN', ao_pos=None, ao_mag='', ao_type='DEFAULT', 
-                         baseline='astrometric', vltitype='astrometry', add_par_dict={}):
+                         met_mode='ON', baseline='astrometric', vltitype='astrometry', add_par_dict={}):
     '''
     Add the acquisition template of dual field wide mode observation. The "TEL.TARG" 
     information is now for SC while "FT.TARG" information is for FT.
@@ -271,11 +359,11 @@ def add_acquisition_wide(obd_dict, acq_dit='0.7', ft_pos={}, sc_pos={}, ft_name=
         ao_pmd = ao_pos.get('pmd', '0.000')
 
     checkList = ['DET1.DIT', 'TEL.TARG.ALPHA', 'TEL.TARG.DELTA', 'TEL.TARG.PMA', 'TEL.TARG.PMD', 'TEL.TARG.PARALLAX', 
-                 'TEL.TARG.RADVEL', 'FT.TARG.ALPHA', 'FT.TARG.DELTA', 'FT.TARG.PMA', 'FT.TARG.PMD', 'FT.TARG.PARALLAX',
-                 'FT.TARG.RADVEL', 'SEQ.FT.ROBJ.NAME', 'SEQ.FT.ROBJ.MAG', 'SEQ.FT.MODE', 'SEQ.INS.SOBJ.NAME',
-                 'SEQ.INS.SOBJ.MAG', 'SEQ.INS.SOBJ.X', 'SEQ.INS.SOBJ.Y', 'SEQ.FI.HMAG', 'INS.SPEC.RES', 'INS.FT.POL', 
-                 'INS.SPEC.POL', 'COU.AG.GSSOURCE', 'COU.AG.ALPHA', 'COU.AG.DELTA', 'COU.GS.MAG', 'COU.AG.PMA', 
-                 'COU.AG.PMD']
+                 'TEL.TARG.RADVEL', 'SEQ.FT.ROBJ.ALPHA', 'SEQ.FT.ROBJ.DELTA', 'SEQ.FT.ROBJ.PMA', 'SEQ.FT.ROBJ.PMD', 
+                 'SEQ.FT.ROBJ.PARALLAX', 'SEQ.FT.ROBJ.RADVEL', 'SEQ.FT.ROBJ.NAME', 'SEQ.FT.ROBJ.MAG', 'SEQ.FT.MODE', 
+                 'SEQ.INS.SOBJ.NAME', 'SEQ.INS.SOBJ.MAG', 'SEQ.INS.SOBJ.X', 'SEQ.INS.SOBJ.Y', 'SEQ.FI.HMAG', 
+                 'SEQ.MET.MODE', 'INS.SPEC.RES', 'INS.FT.POL', 'INS.SPEC.POL', 'COU.AG.GSSOURCE', 'COU.AG.ALPHA', 
+                 'COU.AG.DELTA', 'COU.GS.MAG', 'COU.AG.PMA', 'COU.AG.PMD']
     d = obd_dict['GRAVITY_dual_wide_acq']
     for k in checkList:
         if k not in d:
@@ -288,12 +376,12 @@ def add_acquisition_wide(obd_dict, acq_dit='0.7', ft_pos={}, sc_pos={}, ft_name=
     d['TEL.TARG.PMD'] = sc_pmd
     d['TEL.TARG.PARALLAX'] = sc_plx
     d['TEL.TARG.RADVEL'] = sc_rv
-    d['FT.TARG.ALPHA'] = ft_ra
-    d['FT.TARG.DELTA'] = ft_dec
-    d['FT.TARG.PMA'] = ft_pma
-    d['FT.TARG.PMD'] = ft_pmd
-    d['FT.TARG.PARALLAX'] = ft_plx
-    d['FT.TARG.RADVEL'] = ft_rv
+    d['SEQ.FT.ROBJ.ALPHA'] = ft_ra
+    d['SEQ.FT.ROBJ.DELTA'] = ft_dec
+    d['SEQ.FT.ROBJ.PMA'] = ft_pma
+    d['SEQ.FT.ROBJ.PMD'] = ft_pmd
+    d['SEQ.FT.ROBJ.PARALLAX'] = ft_plx
+    d['SEQ.FT.ROBJ.RADVEL'] = ft_rv
     
     d['SEQ.FT.ROBJ.NAME'] = ft_name
     d['SEQ.FT.ROBJ.MAG'] = ft_kmag
@@ -303,6 +391,7 @@ def add_acquisition_wide(obd_dict, acq_dit='0.7', ft_pos={}, sc_pos={}, ft_name=
     d['SEQ.INS.SOBJ.X'] = sobj_x
     d['SEQ.INS.SOBJ.Y'] = sobj_y
     d['SEQ.FI.HMAG'] = acq_hmag
+    d['SEQ.MET.MODE'] = met_mode
     d['INS.SPEC.RES'] = res
     d['INS.FT.POL'] = pol
     d['INS.SPEC.POL'] = pol
@@ -338,10 +427,11 @@ def add_acquisition_wide(obd_dict, acq_dit='0.7', ft_pos={}, sc_pos={}, ft_name=
     return obd_dict
 
     
-def add_acquisition_dual(obd_dict, acq_dit='0.7', ft_pos={}, sc_pos={}, ft_name='', ft_kmag='', 
+def add_acquisition_dual(obd_dict, acq_dit='0.7', ft_pos={}, ft_name='', ft_kmag='', 
                          ft_mode='AUTO', sc_name='', sc_kmag='', sobj_x='', sobj_y='', acq_hmag='', 
-                         res='MED', pol='IN', ao_pos=None, ao_mag='', ao_type='DEFAULT', 
-                         baseline='astrometric', vltitype='astrometry', add_par_dict={}):
+                         res='MED', pol='IN', ao_pos=None, ao_mag='', ao_type='DEFAULT',
+                         met_mode='ON', baseline='astrometric', vltitype='astrometry', 
+                         add_par_dict={}):
     '''
     Add the acquisition template of dual field observation.
     
@@ -353,14 +443,6 @@ def add_acquisition_dual(obd_dict, acq_dit='0.7', ft_pos={}, sc_pos={}, ft_name=
         The DIT of the acquisition camera.
     ft_pos : dict (default: {})
         The position of the FT source.
-            'ra' ('000000.000')
-            'dec' ('000000.000')
-            'pma' ('0.000')
-            'pmd' ('0.000')
-            'parallax' ('0.0')
-            'radvel' ('0.0')
-    sc_pos : dict (default: {})
-        The position of the SC source.
             'ra' ('000000.000')
             'dec' ('000000.000')
             'pma' ('0.000')
@@ -420,14 +502,6 @@ def add_acquisition_dual(obd_dict, acq_dit='0.7', ft_pos={}, sc_pos={}, ft_name=
     ft_plx = ft_pos.get('parallax', '0.0')
     ft_rv = ft_pos.get('radvel', '0.0')
 
-    # SC coordinates
-    sc_ra = sc_pos.get('ra', '000000.000')
-    sc_dec = sc_pos.get('dec', '000000.000')
-    sc_pma = sc_pos.get('pma', '0.000')
-    sc_pmd = sc_pos.get('pmd', '0.000')
-    sc_plx = sc_pos.get('parallax', '0.0')
-    sc_rv = sc_pos.get('radvel', '0.0')
-
     # AO coordinates
     if ao_pos is None: 
         gssrc = 'SCIENCE'
@@ -444,9 +518,9 @@ def add_acquisition_dual(obd_dict, acq_dit='0.7', ft_pos={}, sc_pos={}, ft_name=
 
     checkList = ['DET1.DIT', 'TEL.TARG.ALPHA', 'TEL.TARG.DELTA', 'TEL.TARG.PMA', 'TEL.TARG.PMD', 'TEL.TARG.PARALLAX', 
                  'TEL.TARG.RADVEL', 'SEQ.FT.ROBJ.NAME', 'SEQ.FT.ROBJ.MAG', 'SEQ.FT.MODE', 'SEQ.INS.SOBJ.NAME',
-                 'SEQ.INS.SOBJ.MAG', 'SEQ.INS.SOBJ.X', 'SEQ.INS.SOBJ.Y', 'SEQ.FI.HMAG', 'INS.SPEC.RES', 'INS.FT.POL', 
-                 'INS.SPEC.POL', 'COU.AG.GSSOURCE', 'COU.AG.ALPHA', 'COU.AG.DELTA', 'COU.GS.MAG', 'COU.AG.PMA', 
-                 'COU.AG.PMD']
+                 'SEQ.INS.SOBJ.MAG', 'SEQ.INS.SOBJ.X', 'SEQ.INS.SOBJ.Y', 'SEQ.FI.HMAG', 'SEQ.MET.MODE', 'INS.SPEC.RES', 
+                 'INS.FT.POL', 'INS.SPEC.POL', 'COU.AG.GSSOURCE', 'COU.AG.ALPHA', 'COU.AG.DELTA', 'COU.GS.MAG', 
+                 'COU.AG.PMA', 'COU.AG.PMD']
     d = obd_dict['GRAVITY_dual_acq']
     for k in checkList:
         if k not in d:
@@ -468,6 +542,7 @@ def add_acquisition_dual(obd_dict, acq_dit='0.7', ft_pos={}, sc_pos={}, ft_name=
     d['SEQ.INS.SOBJ.X'] = sobj_x
     d['SEQ.INS.SOBJ.Y'] = sobj_y
     d['SEQ.FI.HMAG'] = acq_hmag
+    d['SEQ.MET.MODE'] = met_mode
     d['INS.SPEC.RES'] = res
     d['INS.FT.POL'] = pol
     d['INS.SPEC.POL'] = pol
@@ -504,9 +579,8 @@ def add_acquisition_dual(obd_dict, acq_dit='0.7', ft_pos={}, sc_pos={}, ft_name=
 
     
 def add_acquisition_single(obd_dict, acq_dit='0.7', ft_mode='AUTO', sc_pos={}, sc_name='', sc_kmag='', 
-                           acq_hmag='', res='MED', pol='IN', ao_pos=None, ao_mag='', 
-                           ao_type='DEFAULT', baseline='astrometric', vltitype='astrometry', 
-                           add_par_dict={}):
+                           acq_hmag='', res='MED', pol='IN', ao_pos=None, ao_mag='', ao_type='DEFAULT', 
+                           met_mode='ON', baseline='astrometric', vltitype='astrometry', add_par_dict={}):
     '''
     Add the acquisition template of dual field observation.
     
@@ -546,6 +620,8 @@ def add_acquisition_single(obd_dict, acq_dit='0.7', ft_mode='AUTO', sc_pos={}, s
         The optical magnitude of the AO source.
     ao_type : string (default: 'DEFAULT')
         The type of the AO: 'DEFAULT', 'AUTO_GUIDE', 'ADAPT_OPT', 'ADAPT_OPT_TCCD', 'IR_AO_OFFAXIS'.
+    met_mode : string (default: 'ON')
+        The metrology mode: 'ON', 'OFF', 'FAINT', 'WIDE' (not available).
     add_par_dict : dict
         The additional keywords and values that are used.
         
@@ -605,6 +681,7 @@ def add_acquisition_single(obd_dict, acq_dit='0.7', ft_mode='AUTO', sc_pos={}, s
     d['SEQ.INS.SOBJ.NAME'] = sc_name
     d['SEQ.INS.SOBJ.MAG'] = sc_kmag
     d['SEQ.FI.HMAG'] = acq_hmag
+    d['SEQ.MET.MODE'] = met_mode
     d['INS.SPEC.RES'] = res
     d['INS.FT.POL'] = pol
     d['INS.SPEC.POL'] = pol
