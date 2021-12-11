@@ -9,10 +9,10 @@ __all__ = ['gen_OBD_dual', 'gen_OBD_single', 'gen_OBD_wide',
            'add_exposure_dual', 'add_exposure_single', 'add_swap']
 
 def gen_OBD_wide(obd_name, ra_ft, dec_ft, pma_ft, pmd_ft, parallax_ft, radvel_ft, G_ft, K_ft, H_ft, 
-                 ra_sc, dec_sc, pma_sc, pmd_sc, parallax_sc, radvel_sc, K_sc, 
-                 acq_dit, dit, ndit, obsseq, obsid='00001', runID='60.A-9102(I)', 
-                 ft_name='s_ft', sc_name='s_sc', ft_mode='AUTO', res='MED', pol='IN', 
-                 ao_type='ADAPT_OPT', baseline='astrometric', vltitype='astrometry'):
+                 ra_sc, dec_sc, pma_sc, pmd_sc, parallax_sc, radvel_sc, K_sc, dit, ndit, obsseq, 
+                 acq_dit=0.7, sky_x=2000, sky_y=2000, ft_name='s_ft', sc_name='s_sc', ft_mode='AUTO', 
+                 res='MED', pol='IN', met_mode='OFF', ao_type='ADAPT_OPT', obsid='00001', runID='60.A-9102(I)', 
+                 baseline='astrometric', vltitype='astrometry'):
     '''
     Generate the OBD for the wide field observation.
     
@@ -48,28 +48,38 @@ def gen_OBD_wide(obd_name, ra_ft, dec_ft, pma_ft, pmd_ft, parallax_ft, radvel_ft
         Parallax in mas.
     radvel_sc : float
         Radial velocity in km/s.
-    acq_dit : float
-        The DIT on the acquisition camera, units: second.
-    dit : float
+    K_sc : float
+        The K magnitude of the SC target.
+    dit : float or list
         The DIT of the science exposure.
-    ndit : int
+    ndit : int or list
         The number of DITs of the science exposure.
-    obsseq : string
-        The observation sequence.
-    obsid : string
-        The ID of the OB.
-    runID : string
-        The ID of the run.
+    obsseq : list
+        The list of exposures.
+    acq_dit : float (default: 0.7)
+        The DIT on the acquisition camera, units: second.
+    sky_x : float (default: 2000)
+        The offset for sky on RA, units: mas.
+    sky_y : float (default: 2000)
+        The offset for sky on DEC, units: mas.
     ft_name : string (default: 's_ft')
         The name of the FT target.
     sc_name : string (default: 's_sc') 
         The name of the SC target.
     ft_mode : string (default: 'AUTO')
+        The fringe tracker mode, 'AUTO', '1', '2', '7', '9'.
     res : string (default: 'MED') 
         The spectral resolution.
     pol : string (default: 'IN')
+        The polarization modes, 'IN' or 'OUT'.
+    met_mode : string (default: 'OFF')
+        The metrology mode, 'ON', 'OFF', 'FAINT'.
     ao_type : string (default: 'ADAPT_OPT')
         The type of the AO, 'DEFAULT', 'AUTO_GUIDE', 'ADAPT_OPT', 'ADAPT_OPT_TCCD', 'IR_AO_OFFAXIS'.
+    obsid : string
+        The ID of the OB.
+    runID : string
+        The ID of the run.
     baseline : string (default: 'astrometric')
         The baseline types, 'small', 'medium', 'large', 'astrometric', 'UTs'.
     vltitype : string (default: 'astrometry')
@@ -79,29 +89,62 @@ def gen_OBD_wide(obd_name, ra_ft, dec_ft, pma_ft, pmd_ft, parallax_ft, radvel_ft
     -------
     None
     '''
+    if not (isinstance(pma_ft, float) or isinstance(pma_ft, str)):
+        pma_ft = 0
+    if not (isinstance(pmd_ft, float) or isinstance(pmd_ft, str)):
+        pmd_ft = 0
+    if not (isinstance(parallax_ft, float) or isinstance(parallax_ft, str)):
+        parallax_ft = 0
+    if not (isinstance(radvel_ft, float) or isinstance(radvel_ft, str)):
+        radvel_ft = 0
+    if not (isinstance(pma_sc, float) or isinstance(pma_sc, str)):
+        pma_sc = 0
+    if not (isinstance(pmd_sc, float) or isinstance(pmd_sc, str)):
+        pmd_sc = 0
+    if not (isinstance(parallax_sc, float) or isinstance(parallax_sc, str)):
+        parallax_sc = 0
+    if not (isinstance(radvel_sc, float) or isinstance(radvel_sc, str)):
+        radvel_sc = 0
+    if not (isinstance(K_ft, float) or isinstance(K_ft, str)):
+        K_ft = 0
+    if not (isinstance(H_ft, float) or isinstance(H_ft, str)):
+        H_ft = 0
+    if not (isinstance(G_ft, float) or isinstance(G_ft, str)):
+        G_ft = 0
+    if not (isinstance(K_sc, float) or isinstance(K_sc, str)):
+        K_sc = 0
+        
     # Pos dict
     ft_pos = get_pos_J2000(ra=ra_ft, dec=dec_ft, pma=pma_ft, pmd=pmd_ft, parallax=parallax_ft, radvel=radvel_ft)
     sc_pos = get_pos_J2000(ra=ra_sc, dec=dec_sc, pma=pma_sc, pmd=pmd_sc, parallax=parallax_sc, radvel=radvel_sc)
     
-    # offset
-    c_ft = SkyCoord(ra_ft, dec_ft, frame='icrs', unit='deg')
-    c_sc = SkyCoord(ra_sc, dec_sc, frame='icrs', unit='deg')
-    sobj_x, sobj_y = sc_offset(c_sc, c_ft, pma_sc=pma_sc, pmd_sc=pmd_sc, plx_sc=parallax_sc, radvel_sc=radvel_sc,
-                               pma_ft=pma_ft, pmd_ft=pmd_ft, plx_ft=parallax_ft, radvel_ft=radvel_ft)
-    sobj_x = np.round(sobj_x.value, decimals=3)
-    sobj_y = np.round(sobj_y.value, decimals=3)
+    ## offset -- Checked with Taro, no need to calculate the offset
+    #c_ft = SkyCoord(ra_ft, dec_ft, frame='icrs', unit='deg')
+    #c_sc = SkyCoord(ra_sc, dec_sc, frame='icrs', unit='deg')
+    #sobj_x, sobj_y = sc_offset(c_sc, c_ft, pma_sc=pma_sc, pmd_sc=pmd_sc, plx_sc=parallax_sc, radvel_sc=radvel_sc,
+    #                           pma_ft=pma_ft, pmd_ft=pmd_ft, plx_ft=parallax_ft, radvel_ft=radvel_ft)
+    #sobj_x = np.round(sobj_x.value, decimals=3)
+    #sobj_y = np.round(sobj_y.value, decimals=3)
     
     acq_kwargs = dict(acq_dit=acq_dit, ft_pos=ft_pos, sc_pos=sc_pos, ft_name=ft_name, ft_kmag=K_ft, ft_mode=ft_mode, 
-                      sc_name=sc_name, sc_kmag=K_sc, sobj_x=sobj_x, sobj_y=sobj_y, acq_hmag=H_ft, res=res, pol=pol, 
-                      ao_pos=None, ao_mag=G_ft, ao_type=ao_type, met_mode='OFF', baseline=baseline, vltitype=vltitype)
+                      sc_name=sc_name, sc_kmag=K_sc, sobj_x=0, sobj_y=0, acq_hmag=H_ft, res=res, pol=pol, 
+                      ao_pos=None, ao_mag=G_ft, ao_type=ao_type, met_mode=met_mode, baseline=baseline, vltitype=vltitype)
    
-    obsseq = obsseq.strip()
-    obsseq = obsseq.replace(' ', '')
+    assert isinstance(obsseq, list), 'Require obsseq to be a list!'
+    if isinstance(ndit, int):
+        ditList = [dit for ii in range(len(obsseq))]
+        nditList = [ndit for ii in range(len(obsseq))]
+    elif isinstance(ndit, list):
+        ditList = dit
+        nditList = ndit
+    else:
+        raise ValueError('The type of ndit ({}) is not correct!'.format(type(ndit)))
+        
     tplParList = []
-    for obs in obsseq:
-        if obs not in ['S', 'O']:
-            raise KeyError('Cannot recognize {} in the sequence!'.format(obs))
-        tplParList.append(('exposure_dual', dict(acq_dit=acq_dit, dit=dit, ndit=ndit, obsseq=obs)))
+    for obs, dit, ndit in zip(obsseq, ditList, nditList):
+        tplParList.append(('exposure_dual', 
+                           dict(acq_dit=acq_dit, dit=dit, ndit=ndit, obsseq=obs, 
+                                sky_x=sky_x, sky_y=sky_y)))
     
     obd_dict = sequencer(obsid=obsid, runID=runID, acq_mode='wide', acq_kwargs=acq_kwargs, tplParList=tplParList)
     write_obd(obd_name, obd_dict)
@@ -110,44 +153,205 @@ def gen_OBD_wide(obd_name, ra_ft, dec_ft, pma_ft, pmd_ft, parallax_ft, radvel_ft
 def gen_OBD_dual(obd_name, ra_ft, dec_ft, pma_ft, pmd_ft, parallax_ft, radvel_ft, G_ft, K_ft, H_ft, 
                  sobj_x, sobj_y, K_sc, dit, ndit, obsseq, acq_dit=0.7, reloff_x=0.0, reloff_y=0.0, 
                  sky_x=2000, sky_y=2000, ft_name='s_ft', sc_name='s_sc', ft_mode='AUTO', res='MED', 
-                 pol='IN', met_mode='ON', obsid='00001', runID='60.A-9102(I)', ao_type='ADAPT_OPT', 
-                 baseline='astrometric', vltitype='astrometry'):
+                 pol='IN', met_mode='ON', ao_type='ADAPT_OPT', obsid='00001', runID='60.A-9102(I)', 
+                 baseline='astrometric', vltitype='astrometry', gravity_mode='default', 
+                 dit_on=None, ndit_on=None):
     '''
     Generate the OBD for the dual field observation.
+    
+    Parameters
+    ----------
+    ra_ft : float
+        The right ascension of the ft source (degree or HH:MM:SS).
+    dec_ft : float
+        The declination of the ft source (degree or DD:MM:SS).
+    pma_ft : float
+        Proper motion in mas.
+    pmd_ft : float
+        Proper motion in mas.
+    parallax_ft : float
+        Parallax in mas.
+    radvel_ft : float
+        Radial velocity in km/s.
+    G_ft : float
+        The optical magnitude.
+    K_ft : float
+        The K band magnitude.
+    H_ft : float
+        The H band magnitude.
+    sobj_x : float
+        The RA offset of SC target from the FT target, units: mas.
+    sobj_y : float
+        The DEC offset of SC target from the FT target, units: mas.
+    K_sc : float
+        The K magnitude of the SC target.
+    dit : float
+        The DIT of the science exposure.
+    ndit : int
+        The number of DITs of the science exposure.
+    obsseq : list
+        The list of exposures.
+    acq_dit : float (default: 0.7)
+        The DIT on the acquisition camera, units: second.
+    reloff_x : float (default: 0.0)
+        The SC fiber offset, units: mas.
+    reloff_y : float (default: 0.0)
+        The SC fiber offset, units: mas.
+    sky_x : float (default: 2000)
+        The offset for sky on RA, units: mas.
+    sky_y : float (default: 2000)
+        The offset for sky on DEC, units: mas.
+    ft_name : string (default: 's_ft')
+        The name of the FT target.
+    sc_name : string (default: 's_sc') 
+        The name of the SC target.
+    ft_mode : string (default: 'AUTO')
+        The fringe tracker mode, 'AUTO', '1', '2', '7', '9'.
+    res : string (default: 'MED') 
+        The spectral resolution.
+    pol : string (default: 'IN')
+        The polarization modes, 'IN' or 'OUT'.
+    met_mode : string (default: 'OFF')
+        The metrology mode, 'ON', 'OFF', 'FAINT'.
+    ao_type : string (default: 'ADAPT_OPT')
+        The type of the AO, 'DEFAULT', 'AUTO_GUIDE', 'ADAPT_OPT', 'ADAPT_OPT_TCCD', 'IR_AO_OFFAXIS'.
+    obsid : string
+        The ID of the OB.
+    runID : string
+        The ID of the run.
+    baseline : string (default: 'astrometric')
+        The baseline types, 'small', 'medium', 'large', 'astrometric', 'UTs'.
+    vltitype : string (default: 'astrometry')
+        Not important, 'snapshot', 'imaging', 'time_series', 'astrometry'.
+    gravity_mode : string (default: 'default')
+        The observation mode of GRAVITY, 'default' or 'exoGRAVITY'. The 'exoGRAVITY' mode is to 
+        do dual-field on-axis observation like exoGRAVITY.
+    dit_on (optional): float
+        The DIT of science exposure on the FT star, only used when gravity_mode='exoGRAVITY'.
+    ndit_on (optional): int
+        The NDIT of science exposure on the FT star, only used when gravity_mode='exoGRAVITY'.
     
     Notes
     -----
     We need to provide the on-sky position of the targets for normal dual field mode.
     '''
+    if not (isinstance(pma_ft, float) or isinstance(pma_ft, str)):
+        pma_ft = 0
+    if not (isinstance(pmd_ft, float) or isinstance(pmd_ft, str)):
+        pmd_ft = 0
+    if not (isinstance(parallax_ft, float) or isinstance(parallax_ft, str)):
+        parallax_ft = 0
+    if not (isinstance(radvel_ft, float) or isinstance(radvel_ft, str)):
+        radvel_ft = 0
+    if not (isinstance(K_ft, float) or isinstance(K_ft, str)):
+        K_ft = 0
+    if not (isinstance(H_ft, float) or isinstance(H_ft, str)):
+        H_ft = 0
+    if not (isinstance(G_ft, float) or isinstance(G_ft, str)):
+        G_ft = 0
+    if not (isinstance(K_sc, float) or isinstance(K_sc, str)):
+        K_sc = 0
+        
     # Pos dict
     ft_pos = get_pos_current(ra=ra_ft, dec=dec_ft, pma=pma_ft, pmd=pmd_ft, parallax=parallax_ft, radvel=radvel_ft)
     
-    acq_kwargs = dict(acq_dit=acq_dit, ft_pos=ft_pos, ft_name=ft_name, ft_kmag=K_ft, ft_mode=ft_mode, 
-                      sc_name=sc_name, sc_kmag=K_sc, sobj_x=sobj_x, sobj_y=sobj_y, acq_hmag=H_ft, res=res, pol=pol, 
-                      met_mode=met_mode, ao_pos=None, ao_mag=G_ft, ao_type=ao_type, baseline=baseline, vltitype=vltitype)
+    if gravity_mode == 'default':
+        sobj_x_init = sobj_x
+        sobj_y_init = sobj_y
+    elif gravity_mode == 'exoGRAVITY':
+        sep = np.sqrt(sobj_x**2 + sobj_y**2)
+        if sep > 150:
+            sobj_x_init = sobj_x * 1e-3
+            sobj_y_init = sobj_y * 1e-3
+        else:
+            sobj_x_init = sobj_x * 1e-2
+            sobj_y_init = sobj_y * 1e-2
+    else:
+        raise KeyError('Cannot recognize the gravity_mode ({})!'.format(gravity_mode))
+    
+    acq_kwargs = dict(acq_dit=acq_dit, ft_pos=ft_pos, ft_name=ft_name, ft_kmag=K_ft, 
+                      ft_mode=ft_mode, sc_name=sc_name, sc_kmag=K_sc, sobj_x=sobj_x_init, 
+                      sobj_y=sobj_y_init, acq_hmag=H_ft, res=res, pol=pol, met_mode=met_mode, 
+                      ao_pos=None, ao_mag=G_ft, ao_type=ao_type, baseline=baseline, 
+                      vltitype=vltitype)
+    
+    # Convert to string
+    for k in ['sobj_x', 'sobj_y', 'ft_kmag', 'sc_kmag', 'acq_hmag', 'ao_mag']:
+        v = acq_kwargs[k]
+        if isinstance(v, float):
+            acq_kwargs[k] = '{0:.3f}'.format(v)
     
     assert isinstance(obsseq, list), 'Require obsseq to be a list!'
+    if isinstance(ndit, int):
+        ditList = [dit for ii in range(len(obsseq))]
+        nditList = [ndit for ii in range(len(obsseq))]
+    elif isinstance(ndit, list):
+        ditList = dit
+        nditList = ndit
+    else:
+        raise ValueError('The type of ndit ({}) is not correct!'.format(type(ndit)))
+    
     tplParList = []
-    for obs in obsseq:
-        if obs == 'swap':
-            tplParList.append(('swap', dict()))
-        else:
-            tplParList.append(('exposure_dual', 
-                               dict(acq_dit=acq_dit, dit=dit, ndit=ndit, obsseq=obs, 
-                                    reloff_x=reloff_x, reloff_y=reloff_y, sky_x=sky_x, 
-                                    sky_y=sky_y)))
+    if gravity_mode == 'default':
+        for obs, dit, ndit in zip(obsseq, ditList, nditList):
+            if obs == 'swap':
+                tplParList.append(('swap', dict()))
+            else:
+                tplParList.append(('exposure_dual', 
+                                   dict(acq_dit=acq_dit, dit=dit, ndit=ndit, obsseq=obs, 
+                                        reloff_x=reloff_x, reloff_y=reloff_y, sky_x=sky_x, 
+                                        sky_y=sky_y)))
+    else:
+        assert dit_on is not None, 'Need to specify dit_on!'
+        assert ndit_on is not None, 'Need to specify ndit_on!'
+        for obs, dit, ndit in zip(obsseq, ditList, nditList):
+            # On FT, O
+            if obs == 'on:O':
+                tplParList.append(('exposure_dual', 
+                                   dict(acq_dit=acq_dit, dit=dit_on, ndit=ndit_on, obsseq='O', 
+                                        reloff_x=-sobj_x_init, reloff_y=-sobj_y_init, sky_x=sky_x, 
+                                        sky_y=sky_y)))
+            # On FT, O S
+            elif obs == 'on:OS':
+                tplParList.append(('exposure_dual', 
+                                   dict(acq_dit=acq_dit, dit=dit_on, ndit=ndit_on, obsseq='O S', 
+                                        reloff_x=-sobj_x_init, reloff_y=-sobj_y_init, sky_x=sky_x, 
+                                        sky_y=sky_y)))
+            elif obs == 'swap':
+                raise KeyError('Cannot do swap for dual-field on-axis!')
+            else:
+                tplParList.append(('exposure_dual', 
+                                   dict(acq_dit=acq_dit, dit=dit, ndit=ndit, obsseq=obs, 
+                                        reloff_x=(sobj_x-sobj_x_init), reloff_y=(sobj_y-sobj_y_init), 
+                                        sky_x=sky_x, sky_y=sky_y)))
     
     obd_dict = sequencer(obsid=obsid, runID=runID, acq_mode='dual', acq_kwargs=acq_kwargs, tplParList=tplParList)
     write_obd(obd_name, obd_dict)
 
 
-def gen_OBD_single(obd_name, ra_sc, dec_sc, pma_sc, pmd_sc, parallax_sc, radvel_sc, K_sc, H_sc, G_sc, 
-                   acq_dit, dit, ndit, obsseq, obsid='00001', runID='60.A-9102(I)', sc_name='s_sc', 
-                   ft_mode='AUTO', res='MED', pol='IN', ao_type='ADAPT_OPT', baseline='astrometric', 
-                   vltitype='astrometry'):
+def gen_OBD_single(obd_name, ra_sc, dec_sc, pma_sc, pmd_sc, parallax_sc, radvel_sc, 
+                   K_sc, H_sc, G_sc, acq_dit, dit, ndit, obsseq, sky_x=2000, sky_y=2000, 
+                   obsid='00001', runID='60.A-9102(I)', sc_name='s_sc', ft_mode='AUTO', 
+                   res='MED', pol='IN', met_mode='ON', ao_type='ADAPT_OPT', 
+                   baseline='astrometric', vltitype='astrometry'):
     '''
     Generate the OBD for the single field observation.
     '''
+    if not (isinstance(pma_sc, float) or isinstance(pma_sc, str)):
+        pma_sc = 0
+    if not (isinstance(pmd_sc, float) or isinstance(pmd_sc, str)):
+        pmd_sc = 0
+    if not (isinstance(parallax_sc, float) or isinstance(parallax_sc, str)):
+        parallax_sc = 0
+    if not (isinstance(radvel_sc, float) or isinstance(radvel_sc, str)):
+        radvel_sc = 0
+    if not (isinstance(K_sc, float) or isinstance(K_sc, str)):
+        K_sc = 0
+    if not (isinstance(H_sc, float) or isinstance(H_sc, str)):
+        H_sc = 0
+    if not (isinstance(G_sc, float) or isinstance(G_sc, str)):
+        G_sc = 0
+
     # Pos dict
     sc_pos = get_pos_current(ra=ra_sc, dec=dec_sc, pma=pma_sc, pmd=pmd_sc, parallax=parallax_sc, radvel=radvel_sc)
     
@@ -156,19 +360,36 @@ def gen_OBD_single(obd_name, ra_sc, dec_sc, pma_sc, pmd_sc, parallax_sc, radvel_
     
     acq_kwargs = dict(acq_dit=acq_dit, sc_pos=sc_pos, ft_mode=ft_mode, sc_name=sc_name, 
                       sc_kmag=K_sc, acq_hmag=H_sc, res=res, pol=pol, ao_pos=None, 
-                      ao_mag=G_sc, ao_type=ao_type, baseline=baseline, vltitype=vltitype)
-   
-    obsseq = obsseq.strip()
-    obsseq = obsseq.replace(' ', '')
+                      ao_mag=G_sc, ao_type=ao_type, met_mode=met_mode, baseline=baseline, 
+                      vltitype=vltitype)
+
+    # Convert to string
+    for k in ['sc_kmag', 'acq_hmag', 'ao_mag']:
+        v = acq_kwargs[k]
+        if isinstance(v, float):
+            acq_kwargs[k] = '{0:.3f}'.format(v)
+    
+    assert isinstance(obsseq, list), 'Require obsseq to be a list!'
+    if isinstance(ndit, int):
+        ditList = [dit for ii in range(len(obsseq))]
+        nditList = [ndit for ii in range(len(obsseq))]
+    elif isinstance(ndit, list):
+        ditList = dit
+        nditList = ndit
+    else:
+        raise ValueError('The type of ndit ({}) is not correct!'.format(type(ndit)))
+    
     tplParList = []
-    for obs in obsseq:
+    for obs, dit, ndit in zip(obsseq, ditList, nditList):
         if obs not in ['S', 'O']:
             raise KeyError('Cannot recognize {} in the sequence!'.format(obs))
-        tplParList.append(('exposure_dual', dict(acq_dit=acq_dit, dit=dit, ndit=ndit, obsseq=obs)))
-    
+        tplParList.append(('exposure_single', 
+                           dict(acq_dit=acq_dit, dit=dit, ndit=ndit, obsseq=obs, 
+                                sky_x=sky_x, sky_y=sky_y)))
+
     obd_dict = sequencer(obsid=obsid, runID=runID, acq_mode='single', acq_kwargs=acq_kwargs, tplParList=tplParList)
     write_obd(obd_name, obd_dict)
-    
+
 
 def sequencer(obsid=None, runID='60.A-9102(I)', now_str=None, acq_mode='dual', acq_kwargs={}, tplParList=[]):
     '''

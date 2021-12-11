@@ -49,7 +49,7 @@ SEQ.INS.SOBJ.RADVEL                           "0";
 SEQ.LASERGUID                                 "F";
 SEQ.OFFANG                                    "F";
 SEQ.PICKFT                                    "T";
-SEQ.PICKSC                                    "A";
+SEQ.PICKSC                                    "T";  # Pick the SC target by default
 SEQ.PRESET                                    "T";
 SEQ.SKY.X                                  "2000";
 SEQ.SKY.Y                                  "2000";

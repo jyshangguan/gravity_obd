@@ -5,10 +5,16 @@ from astropy.time import Time
 from astropy import units as u
 from astropy.coordinates import CIRS, GCRS
 from astropy.coordinates import SkyCoord, Distance
+from astroquery.gaia import Gaia
+from astropy.table import Table
+
+Gaia.MAIN_GAIA_TABLE = "gaiadr2.gaia_source"
+Gaia.ROW_LIMIT = 2
 
 __all__ = ['modulepath', 'load_obd_module', 'write_obd', 'coord_offset', 'cal_offset', 
            'cal_coord_motion', 'sc_offset', 'get_coord_plain', 'get_coord_colon',
-           'get_pos_current', 'get_pos_J2000', 'get_pos_ao', 'read_coordinate']
+           'get_pos_current', 'get_pos_J2000', 'get_pos_ao', 'read_coordinate', 
+           'coordinate_convert_epoch', 'search_gaia_single', 'search_gaia_2table']
 
 #-> Obtain the current path
 pathList = os.path.abspath(__file__).split("/")
@@ -276,6 +282,8 @@ def get_coord_plain(c):
     dec_s = eval(dec_s[:-1])
     ra_plain = '{0}{1}{2}'.format(ra_h, ra_m, '{0:.3f}'.format(ra_s).zfill(6))
     dec_plain = '{0}{1}{2}'.format(dec_d, dec_m, '{0:.3f}'.format(dec_s).zfill(6))
+    if dec_plain[0] == '+':
+        dec_plain = dec_plain[1:]
     return ra_plain, dec_plain
 
 
@@ -412,6 +420,77 @@ def get_pos_ao(ra, dec, pma, pmd, parallax, radvel):
     return pos
     
     
+def coordinate_convert_epoch(ra, dec, pma, pmd, parallax, radial_velocity, 
+                             ref_epoch, target_epoch):
+    '''
+    Convert the coordinate to the targeted epoch.
+    
+    Parameters
+    ----------
+    ra : float
+        R.A. in degree.
+    dec : float
+        Decl. in degree.
+    pma : float
+        Proper motion of R.A., units: mas/yr.
+    pmd : float
+        Proper motion of Decl., units: mas/yr.
+    parallax : float
+        Parallax, in mas.
+    radial_velocity : float
+        Radial velocity, units: km/s.
+    ref_epoch : string
+        The reference epoch. J2015.5 for Gaia.
+    target_epoch : string
+        The targeted epoch. Typically, J2000.
+    
+    Returns
+    -------
+    c_t : SkyCoord
+        The converted coordinate.
+    '''
+    c = SkyCoord(ra=ra*u.deg, dec=dec*u.deg, 
+                 pm_ra_cosdec=pma*u.mas/u.yr, pm_dec=pmd*u.mas/u.yr, 
+                 distance=Distance(parallax=parallax*u.mas), 
+                 radial_velocity=radial_velocity*u.km/u.s, 
+                 obstime=ref_epoch)
+    c_t = c.apply_space_motion(Time(target_epoch))
+    return c_t
+    
+    
+def search_gaia_single(ra, dec, radius):
+    '''
+    Search the target in Gaia.
+    
+    Parameters
+    ----------
+    ra : string or float
+        R.A. in 'h:m:s' or degree.
+    dec : string or float
+        Decl. in 'd:m:s' or degree.
+    radius : float
+        Searching radius in arcsec.
+        
+    Returns
+    -------
+    Result table of the closest target.
+    '''
+    coord = read_coordinate(ra, dec)
+    radius = u.Quantity(radius, u.arcsec)
+    j = Gaia.cone_search_async(coordinate=coord, radius=radius)
+    r = j.get_results()
+    
+    len_tb = len(r)
+    if len_tb == 0:
+        raise RuntimeError('Cannot find any results!')
+    
+    if len_tb > 1:
+        fltr = np.arange(len_tb) == np.argmin(r['dist'])
+        r = r[fltr]
+    
+    return r
+    
+    
 def read_coordinate(ra, dec):
     '''
     Read in the coordinate, either in degree or hourangle. Only use ICRS frame.
@@ -434,3 +513,34 @@ def read_coordinate(ra, dec):
     else:
         c = SkyCoord(ra, dec, frame='icrs', unit='deg')
     return c
+    
+    
+def search_gaia_2table(ra, dec, radius):
+    '''
+    Search for Gaia info and convert them to J2000 into a table.
+    '''
+    r = search_gaia_single(ra, dec, radius)
+    
+    ra = r['ra'][0]
+    dec = r['dec'][0]
+    pma = r['pmra'][0]
+    pmd = r['pmdec'][0]
+    plx = r['parallax'][0]
+    rv = r['radial_velocity'][0]
+    ref_epoch = 'J{}'.format(r['ref_epoch'][0])
+    target_epoch = 'J2000'
+    
+    if plx < 0:
+        plx = 0
+    c2000 = coordinate_convert_epoch(ra, dec, pma, pmd, plx, rv, ref_epoch, target_epoch)
+    
+    ra_c, dec_c = get_coord_colon(c2000)
+    
+    tb = Table([[ra_c], [dec_c], [pma], [pmd], [plx], [rv], r['phot_g_mean_mag']], 
+               names=['ra', 'dec', 'pma', 'pmd', 'plx', 'rv', 'G'])
+    tb['pma'].format = '%.3f'
+    tb['pmd'].format = '%.3f'
+    tb['plx'].format = '%.3f'
+    tb['rv'].format = '%.2f'
+    tb['G'].format = '%.1f'
+    return tb
