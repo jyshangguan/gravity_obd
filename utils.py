@@ -5,16 +5,17 @@ from astropy.time import Time
 from astropy import units as u
 from astropy.coordinates import CIRS, GCRS
 from astropy.coordinates import SkyCoord, Distance
-from astroquery.gaia import Gaia
 from astropy.table import Table
-
-Gaia.MAIN_GAIA_TABLE = "gaiadr2.gaia_source"
-Gaia.ROW_LIMIT = 2
-
+from astroquery.xmatch import XMatch
+#from astroquery.gaia import Gaia
+#Gaia.MAIN_GAIA_TABLE = "gaiadr2.gaia_source"
+#Gaia.ROW_LIMIT = 2
+ 
 __all__ = ['modulepath', 'load_obd_module', 'write_obd', 'coord_offset', 'cal_offset', 
            'cal_coord_motion', 'sc_offset', 'get_coord_plain', 'get_coord_colon',
            'get_pos_current', 'get_pos_J2000', 'get_pos_ao', 'read_coordinate', 
-           'coordinate_convert_epoch', 'search_gaia_single', 'search_gaia_2table']
+           'coordinate_convert_epoch', 'search_gaia_single', 'search_gaia_2table', 
+           'xmatch_gaia']
 
 #-> Obtain the current path
 pathList = os.path.abspath(__file__).split("/")
@@ -276,10 +277,10 @@ def get_coord_plain(c):
     ra, dec = c.to_string('hmsdms').split(' ')
     ra_h = ra[:2]
     ra_m = ra[3:5]
-    ra_s = eval(ra[6:-1])
+    ra_s = float(ra[6:-1])
     dec_d, dec_tmp = dec.split('d')
     dec_m, dec_s = dec_tmp.split('m')
-    dec_s = eval(dec_s[:-1])
+    dec_s = float(dec_s[:-1])
     ra_plain = '{0}{1}{2}'.format(ra_h, ra_m, '{0:.3f}'.format(ra_s).zfill(6))
     dec_plain = '{0}{1}{2}'.format(dec_d, dec_m, '{0:.3f}'.format(dec_s).zfill(6))
     if dec_plain[0] == '+':
@@ -304,10 +305,10 @@ def get_coord_colon(c):
     ra, dec = c.to_string('hmsdms').split(' ')
     ra_h = ra[:2]
     ra_m = ra[3:5]
-    ra_s = eval(ra[6:-1])
+    ra_s = float(ra[6:-1])
     dec_d, dec_tmp = dec.split('d')
     dec_m, dec_s = dec_tmp.split('m')
-    dec_s = eval(dec_s[:-1])
+    dec_s = float(dec_s[:-1])
     ra_colon = '{0}:{1}:{2}'.format(ra_h, ra_m, '{0:.3f}'.format(ra_s).zfill(6))
     dec_colon = '{0}:{1}:{2}'.format(dec_d, dec_m, '{0:.3f}'.format(dec_s).zfill(6))
     return ra_colon, dec_colon
@@ -409,8 +410,8 @@ def get_pos_ao(ra, dec, pma, pmd, parallax, radvel):
         The dict of the position information of the target.
     '''
     c = read_coordinate(ra, dec)
-    c_cur = cal_coord_motion(c, pma*u.mas/u.yr, pmd*u.mas/u.yr, parallax*u.mas, radvel*u.km/u.s)
-    ra_hms, dec_dms = get_coord_colon(c_cur)
+    #c_cur = cal_coord_motion(c, pma*u.mas/u.yr, pmd*u.mas/u.yr, parallax*u.mas, radvel*u.km/u.s)
+    ra_hms, dec_dms = get_coord_colon(c)
     pos = dict(ra=ra_hms, 
                dec=dec_dms, 
                pma='{0:.5f}'.format(pma*1e-3), 
@@ -482,6 +483,7 @@ def search_gaia_single(ra, dec, radius):
     
     len_tb = len(r)
     if len_tb == 0:
+        print(ra, dec)
         raise RuntimeError('Cannot find any results!')
     
     if len_tb > 1:
@@ -544,3 +546,67 @@ def search_gaia_2table(ra, dec, radius):
     tb['rv'].format = '%.2f'
     tb['G'].format = '%.1f'
     return tb
+
+
+def xmatch_gaia(t, radius, colRA, colDec, vizier_code='I/345/gaia2'):
+    '''
+    Cross match the table with Gaia.
+    
+    Parameters
+    ----------
+    t : Astropy Table
+        The table of targets.
+    radius : float
+        The cross match radius, units: arcsec.
+    colRA : string
+        The column name of the RA.
+    colDec : string
+        The column name of the Dec.
+    vizier_code : string
+        The vizieR code of the Gaia table.
+        
+    Returns
+    -------
+    t_f : Astropy Table
+        The table of cross matched results.
+    '''
+    for cn in ['ra_gaia_J2000', 'dec_gaia_J2000', 'pma', 'pmd', 'plx', 'rv', 'G']:
+        assert cn not in t.colnames, 'The input table has {} as a column!'.format(cn)
+    
+    t_o = XMatch.query(cat1=t,
+                       cat2='vizier:{}'.format(vizier_code),
+                       max_distance=radius * u.arcsec, colRA1=colRA,
+                       colDec1=colDec, colRA2='RAJ2000', colDec2='DECJ2000')
+    
+    ra = []
+    dec = []
+    pma = []
+    pmd = []
+    plx = []
+    rv = []
+    G = []
+    for loop in range(len(t)):
+        fltr = (t_o[colRA] == t[colRA][loop]) & (t_o[colDec] == t[colDec][loop])
+        if np.sum(fltr) == 0:
+            ra.append(np.nan)
+            dec.append(np.nan)
+            pma.append(np.nan)
+            pmd.append(np.nan)
+            plx.append(np.nan)
+            rv.append(np.nan)
+            G.append(np.nan)
+        else:
+            t_f = t_o[fltr]
+            idx = np.argmin(t_f['angDist'])
+            ra.append(t_f['ra_epoch2000'][idx])
+            dec.append(t_f['dec_epoch2000'][idx])
+            pma.append(t_f['pmra'][idx])
+            pmd.append(t_f['pmdec'][idx])
+            plx.append(t_f['parallax'][idx])
+            rv.append(t_f['radial_velocity'][idx])
+            G.append(t_f['phot_g_mean_mag'][idx])
+    t_f = t.copy()
+    t_f.add_columns([ra, dec, pma, pmd, plx, rv, G], 
+                   names=['ra_gaia_J2000', 'dec_gaia_J2000',
+                          'pma', 'pmd', 'plx', 'rv', 'G'])
+    return t_f

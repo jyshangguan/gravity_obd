@@ -37,7 +37,7 @@ SEQ.INS.SOBJ.RADVEL                           "0";
 SEQ.LASERGUID                                 "F";
 SEQ.OFFANG                                    "F";
 SEQ.PICKFT                                    "T";
-SEQ.PICKSC                                    "A";
+#SEQ.PICKSC                                    "A";  # JS: Single acquisition do not have PICKSC
 SEQ.PRESET                                    "T";
 SEQ.SKY.X                                  "2000";
 SEQ.SKY.Y                                  "2000";
@@ -65,8 +65,8 @@ COU.AG.OBJCNT                                 "F";
 COU.AG.OPTIMIZE                               "F";
 COU.AG.START                                  "F";
 COU.AG.TYPE                           "ADAPT_OPT";
-# COU.GS.FWHM                                 "0.0";  #JS: Not sure whether this is correct
-# COU.GS.WAVELEN                                "0";  #JS: Not sure whether this is correct
+COU.GS.FWHM                                 "0.0";  #JS: Not sure whether this is correct
+COU.GS.WAVELEN                              "600";  #JS: Not sure whether this is correct
 DEL.REF.MODE                               "AUTO";
 DEL.REF.NAME                                  "1";
 DEL.REF.OPL                                 "250";

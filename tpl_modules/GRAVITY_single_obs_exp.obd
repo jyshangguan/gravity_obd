@@ -14,4 +14,4 @@ SEQ.SKY.Y                                  "2000";
 #SEQ.SYNCHRO                                  "T";  #JS: Not sure whether this is correct
 INS.SPEC.RES                               "SAME";
 INS.SPEC.POL                               "SAME";
-#DPR.CATG                                  "TEST";  #JS: Not sure whether this is correct
+DPR.CATG                                "SCIENCE";  #JS: Need to be TEST for commissioning, but later it does not matter

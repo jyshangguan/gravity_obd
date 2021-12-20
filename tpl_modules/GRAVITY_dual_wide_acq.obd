@@ -36,6 +36,7 @@ SEQ.INS.SOBJ.NAME                              "";
 SEQ.INS.SOBJ.MAG                               "";
 SEQ.INS.SOBJ.DIAMETER                       "0.0";  # mas
 SEQ.INS.SOBJ.VIS                              "1";
+SEQ.INS.SOBJ.HMAG                           "0.0";
 SEQ.INS.SOBJ.X                                 "";  # mas
 SEQ.INS.SOBJ.Y                                 "";  # mas
 SEQ.FI.HMAG                                    "";
@@ -77,8 +78,8 @@ COU.AG.OBJCNT                                 "F";
 COU.AG.OPTIMIZE                               "F";
 COU.AG.START                                  "F";
 COU.AG.TYPE                           "ADAPT_OPT";
-# COU.GS.FWHM                                 "0.0";  #JS: Not sure whether this is correct
-# COU.GS.WAVELEN                                "0";  #JS: Not sure whether this is correct
+COU.GS.FWHM                                 "0.0";  #JS: Not sure whether this is correct
+COU.GS.WAVELEN                              "600";  #JS: Not sure whether this is correct
 DEL.REF.MODE                               "AUTO";
 DEL.REF.NAME                                  "1";
 DEL.REF.OPL                                 "250";
