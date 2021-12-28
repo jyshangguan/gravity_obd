@@ -128,7 +128,7 @@ def ob_add_description(ob, name, userComments):
     
 
 def template_add_acq_dual_wide(api, obId, ft_name, ra_ft, dec_ft, pma_ft, pmd_ft, plx_ft, G_ft, H_ft, K_ft, 
-                               sc_name, plx_sc, K_sc, ft_mode='AUTO', met_mode='ON', res='MED', pol='IN', 
+                               sc_name, plx_sc, H_sc, K_sc, ft_mode='AUTO', met_mode='ON', res='MED', pol='IN', 
                                ao_type='ADAPT_OPT', baseline=None, vltitype=None):
     '''
     Add GRAVITY_dual_wide_acq template.
@@ -205,6 +205,7 @@ def template_add_acq_dual_wide(api, obId, ft_name, ra_ft, dec_ft, pma_ft, pmd_ft
         'SEQ.FT.ROBJ.PMD': pmd_ft,
         'SEQ.FT.MODE': ft_mode,
         'SEQ.MET.MODE': met_mode,
+        'SEQ.INS.SOBJ.HMAG': H_sc,
         'TEL.TARG.PARALLAX': plx_sc,
         'INS.SPEC.RES': res,
         'INS.FT.POL': pol,
@@ -246,11 +247,16 @@ def template_add_dual_obs_exp(api, obId, dit, ndit, hwpoff=[0], off_x=[0], off_y
     scTplVersion : string
         Template version.
     '''
+    if dit == 0.3:
+        dit = float(0.3)
+    else:
+        dit = int(dit)
+        
     scTpl, scTplVersion = api.createTemplate(obId, 'GRAVITY_dual_obs_exp')
     scTpl, scTplVersion = api.setTemplateParams(obId, scTpl, {
         'DET2.DIT' : dit,
-        'DET2.NDIT.OBJECT': ndit,
-        'DET2.NDIT.SKY': ndit,
+        'DET2.NDIT.OBJECT': int(ndit),
+        'DET2.NDIT.SKY': int(ndit),
         'SEQ.HWPOFF': hwpoff,
         'SEQ.OBSSEQ': obsseq,
         'SEQ.RELOFF.X': off_x,
