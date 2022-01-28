@@ -585,6 +585,8 @@ def xmatch_gaia(t, radius, colRA, colDec, vizier_code='I/345/gaia2'):
     plx = []
     rv = []
     G = []
+    Grp = []
+    Gbp = []
     for loop in range(len(t)):
         fltr = (t_o[colRA] == t[colRA][loop]) & (t_o[colDec] == t[colDec][loop])
         if np.sum(fltr) == 0:
@@ -595,6 +597,8 @@ def xmatch_gaia(t, radius, colRA, colDec, vizier_code='I/345/gaia2'):
             plx.append(np.nan)
             rv.append(np.nan)
             G.append(np.nan)
+            Grp.append(np.nan)
+            Gbp.append(np.nan)
         else:
             t_f = t_o[fltr]
             idx = np.argmin(t_f['angDist'])
@@ -605,8 +609,10 @@ def xmatch_gaia(t, radius, colRA, colDec, vizier_code='I/345/gaia2'):
             plx.append(t_f['parallax'][idx])
             rv.append(t_f['radial_velocity'][idx])
             G.append(t_f['phot_g_mean_mag'][idx])
+            Grp.append(t_f['phot_rp_mean_mag'][idx])
+            Gbp.append(t_f['phot_bp_mean_mag'][idx])
     t_f = t.copy()
-    t_f.add_columns([ra, dec, pma, pmd, plx, rv, G], 
+    t_f.add_columns([ra, dec, pma, pmd, plx, rv, G, Grp, Gbp], 
                    names=['ra_gaia_J2000', 'dec_gaia_J2000',
-                          'pma', 'pmd', 'plx', 'rv', 'G'])
+                          'pma', 'pmd', 'plx', 'rv', 'G', 'Grp', 'Gbp'])
     return t_f
