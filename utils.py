@@ -6,6 +6,7 @@ from astropy import units as u
 from astropy.coordinates import CIRS, GCRS
 from astropy.coordinates import SkyCoord, Distance
 from astropy.table import Table
+import pickle
 from astroquery.xmatch import XMatch
 #from astroquery.gaia import Gaia
 #Gaia.MAIN_GAIA_TABLE = "gaiadr2.gaia_source"
@@ -15,7 +16,7 @@ __all__ = ['modulepath', 'load_obd_module', 'write_obd', 'coord_offset', 'cal_of
            'cal_coord_motion', 'sc_offset', 'get_coord_plain', 'get_coord_colon',
            'get_pos_current', 'get_pos_J2000', 'get_pos_ao', 'read_coordinate', 
            'coordinate_convert_epoch', 'search_gaia_single', 'search_gaia_2table', 
-           'xmatch_gaia']
+           'xmatch_gaia', 'color_GrpH', 'color_GrpK']
 
 #-> Obtain the current path
 pathList = os.path.abspath(__file__).split("/")
@@ -578,8 +579,10 @@ def xmatch_gaia(t, radius, colRA, colDec, vizier_code='I/345/gaia2'):
                        max_distance=radius * u.arcsec, colRA1=colRA,
                        colDec1=colDec, colRA2='RAJ2000', colDec2='DECJ2000')
     
-    ra = []
-    dec = []
+    ra_j2000 = []
+    dec_j2000 = []
+    ra_j2015 = []
+    dec_j2015 = []
     pma = []
     pmd = []
     plx = []
@@ -590,8 +593,10 @@ def xmatch_gaia(t, radius, colRA, colDec, vizier_code='I/345/gaia2'):
     for loop in range(len(t)):
         fltr = (t_o[colRA] == t[colRA][loop]) & (t_o[colDec] == t[colDec][loop])
         if np.sum(fltr) == 0:
-            ra.append(np.nan)
-            dec.append(np.nan)
+            ra_j2000.append(np.nan)
+            dec_j2000.append(np.nan)
+            ra_j2015.append(np.nan)
+            dec_j2015.append(np.nan)
             pma.append(np.nan)
             pmd.append(np.nan)
             plx.append(np.nan)
@@ -602,8 +607,10 @@ def xmatch_gaia(t, radius, colRA, colDec, vizier_code='I/345/gaia2'):
         else:
             t_f = t_o[fltr]
             idx = np.argmin(t_f['angDist'])
-            ra.append(t_f['ra_epoch2000'][idx])
-            dec.append(t_f['dec_epoch2000'][idx])
+            ra_j2000.append(t_f['ra_epoch2000'][idx])
+            dec_j2000.append(t_f['dec_epoch2000'][idx])
+            ra_j2015.append(t_f['ra'][idx])
+            dec_j2015.append(t_f['dec'][idx])
             pma.append(t_f['pmra'][idx])
             pmd.append(t_f['pmdec'][idx])
             plx.append(t_f['parallax'][idx])
@@ -612,7 +619,28 @@ def xmatch_gaia(t, radius, colRA, colDec, vizier_code='I/345/gaia2'):
             Grp.append(t_f['phot_rp_mean_mag'][idx])
             Gbp.append(t_f['phot_bp_mean_mag'][idx])
     t_f = t.copy()
-    t_f.add_columns([ra, dec, pma, pmd, plx, rv, G, Grp, Gbp], 
-                   names=['ra_gaia_J2000', 'dec_gaia_J2000',
+    t_f.add_columns([ra_j2000, dec_j2000, ra_j2015, dec_j2015, pma, pmd, plx, rv, G, Grp, Gbp], 
+                   names=['ra_gaia_J2000', 'dec_gaia_J2000', 'ra_gaia_J2015', 'dec_gaia_J2015',
                           'pma', 'pmd', 'plx', 'rv', 'G', 'Grp', 'Gbp'])
     return t_f
+    
+    
+# Estimate the Grp to H or K color for quasars given the redshift.
+cDict = pickle.load(open('{}/quasar_color.pck'.format(modulepath), 'rb'))
+
+def color_GrpH(z):
+    '''
+    Color of GRP-H.
+    '''
+    zm = cDict['z']
+    color = cDict['G-H']
+    return np.interp(z, zm, color)
+    
+
+def color_GrpK(z):
+    '''
+    Color of GRP-K.
+    '''
+    zm = cDict['z']
+    color = cDict['G-K']
+    return np.interp(z, zm, color)
