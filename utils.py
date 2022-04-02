@@ -303,7 +303,10 @@ def get_coord_colon(c):
     ra_colon, dec_colon : string
         The coordinates in HH:MM:SS.SSS and DD:MM:SS.SSS
     '''
-    ra, dec = c.to_string('hmsdms').split(' ')
+    try:
+        ra, dec = c.to_string('hmsdms').split(' ')
+    except ValueError:
+        return '00:00:00.000', '00:00:00.000'
     ra_h = ra[:2]
     ra_m = ra[3:5]
     ra_s = float(ra[6:-1])
