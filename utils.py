@@ -16,7 +16,7 @@ __all__ = ['modulepath', 'load_obd_module', 'write_obd', 'coord_offset', 'cal_of
            'cal_coord_motion', 'sc_offset', 'get_coord_plain', 'get_coord_colon',
            'get_pos_current', 'get_pos_J2000', 'get_pos_ao', 'read_coordinate', 
            'coordinate_convert_epoch', 'search_gaia_single', 'search_gaia_2table', 
-           'xmatch_gaia', 'color_GrpH', 'color_GrpK']
+           'xmatch_gaia', 'search_simbad', 'color_GrpH', 'color_GrpK']
 
 #-> Obtain the current path
 pathList = os.path.abspath(__file__).split("/")
@@ -594,7 +594,7 @@ def xmatch_gaia(t, radius, colRA, colDec, vizier_code='I/345/gaia2'):
     Grp = []
     Gbp = []
     for loop in range(len(t)):
-        fltr = (t_o[colRA] == t[colRA][loop]) & (t_o[colDec] == t[colDec][loop])
+        fltr = np.isclose(t_o[colRA], t[colRA][loop]) & np.isclose(t_o[colDec], t[colDec][loop])
         if np.sum(fltr) == 0:
             ra_j2000.append(np.nan)
             dec_j2000.append(np.nan)
@@ -626,6 +626,36 @@ def xmatch_gaia(t, radius, colRA, colDec, vizier_code='I/345/gaia2'):
                    names=['ra_gaia_J2000', 'dec_gaia_J2000', 'ra_gaia_J2015', 'dec_gaia_J2015',
                           'pma', 'pmd', 'plx', 'rv', 'G', 'Grp', 'Gbp'])
     return t_f
+    
+    
+def search_simbad(name):
+    '''
+    Find the target name from Simbad.
+    
+    Parameters
+    ----------
+    name : str
+        Name of the target.
+    
+    Returns
+    -------
+    ra_hms, dec_hms  : str
+        Coordinates, (HH:MM:SS, DD:MM:SS).
+    pma, pmd : str
+        Proper motion, units: arcsec / year
+    '''
+    result_table = Simbad.query_object(name)
+    
+    if result_table is None:
+        raise Exception('The target ({}) is not found!'.format(name))
+    
+    ra = result_table['RA'][0]
+    dec = result_table['DEC'][0]
+    pma = result_table['PMRA'][0] * 1e-3
+    pmd = result_table['PMDEC'][0] * 1e-3
+    c = read_coordinate(ra, dec)
+    ra_hms, dec_dms = get_coord_colon(c)
+    return ra_hms, dec_dms, pma, pmd
     
     
 # Estimate the Grp to H or K color for quasars given the redshift.

@@ -634,7 +634,7 @@ class p2api_GRAVITY(object):
         self.update_content()
     
     
-    def update_content(self):
+    def update_content(self, no_warning=False):
         '''
         Update the content of this run.
         '''
