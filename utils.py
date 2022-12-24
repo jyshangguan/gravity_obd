@@ -16,7 +16,7 @@ __all__ = ['modulepath', 'load_obd_module', 'write_obd', 'coord_offset', 'cal_of
            'cal_coord_motion', 'sc_offset', 'get_coord_plain', 'get_coord_colon',
            'get_pos_current', 'get_pos_J2000', 'get_pos_ao', 'read_coordinate', 
            'coordinate_convert_epoch', 'search_gaia_single', 'search_gaia_2table', 
-           'xmatch_gaia', 'search_simbad', 'color_GrpH', 'color_GrpK']
+           'xmatch_gaiadr2', 'xmatch_gaiadr3', 'search_simbad', 'color_GrpH', 'color_GrpK']
 
 #-> Obtain the current path
 pathList = os.path.abspath(__file__).split("/")
@@ -552,7 +552,7 @@ def search_gaia_2table(ra, dec, radius):
     return tb
 
 
-def xmatch_gaia(t, radius, colRA, colDec, vizier_code='I/345/gaia2'):
+def xmatch_gaiadr2(t, radius, colRA, colDec):
     '''
     Cross match the table with Gaia.
     
@@ -578,7 +578,7 @@ def xmatch_gaia(t, radius, colRA, colDec, vizier_code='I/345/gaia2'):
         assert cn not in t.colnames, 'The input table has {} as a column!'.format(cn)
     
     t_o = XMatch.query(cat1=t,
-                       cat2='vizier:{}'.format(vizier_code),
+                       cat2='vizier:I/345/gaia2',
                        max_distance=radius * u.arcsec, colRA1=colRA,
                        colDec1=colDec, colRA2='RAJ2000', colDec2='DECJ2000')
     
@@ -593,6 +593,7 @@ def xmatch_gaia(t, radius, colRA, colDec, vizier_code='I/345/gaia2'):
     G = []
     Grp = []
     Gbp = []
+    sourceID = []
     for loop in range(len(t)):
         fltr = np.isclose(t_o[colRA], t[colRA][loop]) & np.isclose(t_o[colDec], t[colDec][loop])
         if np.sum(fltr) == 0:
@@ -607,6 +608,7 @@ def xmatch_gaia(t, radius, colRA, colDec, vizier_code='I/345/gaia2'):
             G.append(np.nan)
             Grp.append(np.nan)
             Gbp.append(np.nan)
+            sourceID.append(np.nan)
         else:
             t_f = t_o[fltr]
             idx = np.argmin(t_f['angDist'])
@@ -621,12 +623,91 @@ def xmatch_gaia(t, radius, colRA, colDec, vizier_code='I/345/gaia2'):
             G.append(t_f['phot_g_mean_mag'][idx])
             Grp.append(t_f['phot_rp_mean_mag'][idx])
             Gbp.append(t_f['phot_bp_mean_mag'][idx])
+            sourceID.append(t_f['source_id'][idx])
     t_f = t.copy()
-    t_f.add_columns([ra_j2000, dec_j2000, ra_j2015, dec_j2015, pma, pmd, plx, rv, G, Grp, Gbp], 
+    t_f.add_columns([ra_j2000, dec_j2000, ra_j2015, dec_j2015, pma, pmd, plx, rv, G, Grp, Gbp, sourceID], 
                    names=['ra_gaia_J2000', 'dec_gaia_J2000', 'ra_gaia_J2015', 'dec_gaia_J2015',
-                          'pma', 'pmd', 'plx', 'rv', 'G', 'Grp', 'Gbp'])
+                          'pma', 'pmd', 'plx', 'rv', 'G', 'Grp', 'Gbp', 'sourceID'])
     return t_f
+
+
+def xmatch_gaiadr3(t, radius, colRA, colDec):
+    '''
+    Cross match the table with Gaia.
     
+    Parameters
+    ----------
+    t : Astropy Table
+        The table of targets.
+    radius : float
+        The cross match radius, units: arcsec.
+    colRA : string
+        The column name of the RA.
+    colDec : string
+        The column name of the Dec.
+    vizier_code : string
+        The vizieR code of the Gaia table.
+        
+    Returns
+    -------
+    t_f : Astropy Table
+        The table of cross matched results.
+    '''
+    for cn in ['ra_gaia_J2000', 'dec_gaia_J2000', 'pma', 'pmd', 'plx', 'rv', 'G']:
+        assert cn not in t.colnames, 'The input table has {} as a column!'.format(cn)
+    
+    t_o = XMatch.query(cat1=t,
+                       cat2='vizier:I/355/gaiadr3',
+                       max_distance=radius * u.arcsec, colRA1=colRA, colDec1=colDec)
+    
+    ra_j2000 = []
+    dec_j2000 = []
+    ra_j2016 = []
+    dec_j2016 = []
+    pma = []
+    pmd = []
+    plx = []
+    rv = []
+    G = []
+    Grp = []
+    Gbp = []
+    sourceID = []
+    for loop in range(len(t)):
+        fltr = np.isclose(t_o[colRA], t[colRA][loop]) & np.isclose(t_o[colDec], t[colDec][loop])
+        if np.sum(fltr) == 0:
+            ra_j2000.append(np.nan)
+            dec_j2000.append(np.nan)
+            ra_j2016.append(np.nan)
+            dec_j2016.append(np.nan)
+            pma.append(np.nan)
+            pmd.append(np.nan)
+            plx.append(np.nan)
+            rv.append(np.nan)
+            G.append(np.nan)
+            Grp.append(np.nan)
+            Gbp.append(np.nan)
+            sourceID.append(np.nan)
+        else:
+            t_f = t_o[fltr]
+            idx = np.argmin(t_f['angDist'])
+            ra_j2000.append(t_f['RAJ2000'][idx])
+            dec_j2000.append(t_f['DEJ2000'][idx])
+            ra_j2016.append(t_f['RAdeg'][idx])
+            dec_j2016.append(t_f['DEdeg'][idx])
+            pma.append(t_f['pmRA'][idx])
+            pmd.append(t_f['pmDE'][idx])
+            plx.append(t_f['Plx'][idx])
+            rv.append(t_f['RV'][idx])
+            G.append(t_f['Gmag'][idx])
+            Grp.append(t_f['RPmag'][idx])
+            Gbp.append(t_f['BPmag'][idx])
+            sourceID.append(t_f['DR3Name'][idx])
+    t_f = t.copy()
+    t_f.add_columns([ra_j2000, dec_j2000, ra_j2016, dec_j2016, pma, pmd, plx, rv, G, Grp, Gbp, sourceID], 
+                   names=['ra_gaia_J2000', 'dec_gaia_J2000', 'ra_gaia_J2016', 'dec_gaia_J2016',
+                          'pma', 'pmd', 'plx', 'rv', 'G', 'Grp', 'Gbp', 'sourceID'])
+    return t_f
+
     
 def search_simbad(name):
     '''
