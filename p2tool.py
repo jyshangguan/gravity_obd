@@ -167,13 +167,13 @@ class p2api_GRAVITY(object):
         self.update_content()
         
         
-    def add_GRAVITY_dual_acq(self, name, folder_name=None, ft_name='Name', ft_mag=0, 
-                             ft_d=0, ft_vis=1, ft_mode='AUTO', sc_name='Name', sc_mag=0, 
-                             sc_d=0, sc_vis=1, sobj_x=0, sobj_y=0, fi_hmag=0, met_mode='ON',
-                             plx=0, spec_res='MED', ft_pol='IN', sc_pol='IN', gssource='SCIENCE', 
-                             ag_alpha='00:00:00.00', ag_delta='00:00:00.00', gs_mag=0, 
-                             ag_pma=0, ag_pmd=0, ag_type='ADAPT_OPT', baseline=['astrometric'], 
-                             vltitype=['snapshot']):
+    def add_GRAVITY_dual_offaxis_acq(self, name, folder_name=None, ft_mode='AUTO', met_mode='ON', picksc='A', 
+                                     ft_name='Name', ft_kmag=0, ft_hmag=0, ft_d=0, ft_vis=1, 
+                                     sc_name='Name', sc_kmag=0, sc_d=0, sc_vis=1, sobj_x=0, sobj_y=0,
+                                     ft_plx=0, spec_res='MED', ft_pol='OUT', sc_pol='OUT', ag_type='ADAPT_OPT', 
+                                     gs_source='FT', gs_alpha='00:00:00.00', gs_delta='00:00:00.00', gs_plx=0, 
+                                     gs_pma=0, gs_pmd=0, gs_epoch=2000, gs_mag=0, baseline=['astrometric'], 
+                                     vltitype=['snapshot']):
         '''
         Add acquisition template: GRAVITY_dual_acq
         '''
@@ -192,27 +192,50 @@ class p2api_GRAVITY(object):
         except p2api.P2Error as e:
             raise p2api.P2Error(e)
         
-        pars = acqTpl['parameters']
-        pList = [ft_name, ft_mag, ft_d, ft_vis, ft_mode, sc_name, sc_mag, sc_d, 
-                 sc_vis, sobj_x, sobj_y, fi_hmag, met_mode, plx, spec_res, ft_pol, 
-                 sc_pol, gssource, ag_alpha, ag_delta, gs_mag, ag_pma, ag_pmd, ag_type, 
-                 baseline, vltitype]
-        pdict = {}
-        for loop, pv in enumerate(pList):
-            pdict[pars[loop]['name']] = pv
+        pdict = {
+            'SEQ.FT.MODE': ft_mode,
+            'SEQ.MET.MODE': met_mode,
+            'SEQ.PICKSC': picksc,
+            'SEQ.FT.ROBJ.NAME': ft_name,
+            'SEQ.FT.ROBJ.MAG': ft_kmag,
+            'SEQ.FT.ROBJ.HMAG': ft_hmag,
+            'SEQ.FT.ROBJ.DIAMETER': ft_d,
+            'SEQ.FT.ROBJ.VIS': ft_vis,
+            'SEQ.INS.SOBJ.NAME': sc_name,
+            'SEQ.INS.SOBJ.MAG': sc_kmag,
+            'SEQ.INS.SOBJ.DIAMETER': sc_d,
+            'SEQ.INS.SOBJ.VIS': sc_vis,
+            'SEQ.INS.SOBJ.X': sobj_x,
+            'SEQ.INS.SOBJ.Y': sobj_y,
+            'TEL.TARG.PARALLAX': ft_plx,
+            'INS.SPEC.RES': spec_res,
+            'INS.FT.POL': ft_pol,
+            'INS.SPEC.POL': sc_pol,
+            'COU.AG.TYPE': ag_type,
+            'COU.AG.GSSOURCE': gs_source,
+            'COU.AG.ALPHA': gs_alpha,
+            'COU.AG.DELTA': gs_delta,
+            'COU.AG.PARALLAX': gs_plx,
+            'COU.AG.PMA': gs_pma,
+            'COU.AG.PMD': gs_pmd,
+            'COU.AG.EPOCH': gs_epoch,
+            'COU.GS.MAG': gs_mag,
+            'ISS.BASELINE': baseline,
+            'ISS.VLTITYPE': vltitype
+        }
         acqTpl, acqTplVersion  = api.setTemplateParams(obid, acqTpl, pdict, acqTplVersion)
         
         # update the OB version
         odict[name] = api.getOB(ob['obId'])
         
-        
-    def add_GRAVITY_dual_acq_new(self, name, folder_name=None, ft_name='Name', ft_mag=0, 
-                                 ft_d=0, ft_vis=1, ft_mode='AUTO', sc_name='Name', sc_mag=0, 
-                                 sc_d=0, sc_vis=1, sobj_x=0, sobj_y=0, fi_hmag=0, met_mode='ON',
-                                 ft_plx=0, spec_res='MED', ft_pol='IN', sc_pol='IN', gssource='SCIENCE', 
-                                 ag_alpha='00:00:00.00', ag_delta='00:00:00.00', ag_plx=0, gs_mag=0, 
-                                 ag_pma=0, ag_pmd=0, ag_epoch=2000, ag_type='ADAPT_OPT', baseline=['astrometric'], 
-                                 vltitype=['snapshot']):
+
+    def add_GRAVITY_dual_onaxis_acq(self, name, folder_name=None, ft_mode='AUTO', met_mode='ON', 
+                                    ft_name='Name', ft_kmag=0, ft_hmag=0, ft_d=0, ft_vis=1, 
+                                    sc_name='Name', sc_kmag=0, sc_d=0, sc_vis=1, sobj_x=0, sobj_y=0,
+                                    ft_plx=0, spec_res='MED', ft_pol='OUT', sc_pol='OUT', ag_type='ADAPT_OPT', 
+                                    gs_source='FT', gs_alpha='00:00:00.00', gs_delta='00:00:00.00', gs_plx=0, 
+                                    gs_pma=0, gs_pmd=0, gs_epoch=2000, gs_mag=0, baseline=['astrometric'], 
+                                    vltitype=['snapshot']):
         '''
         Add acquisition template: GRAVITY_dual_acq
         '''
@@ -235,12 +258,12 @@ class p2api_GRAVITY(object):
             'SEQ.FT.MODE': ft_mode,
             'SEQ.MET.MODE': met_mode,
             'SEQ.FT.ROBJ.NAME': ft_name,
-            'SEQ.FT.ROBJ.MAG': ft_mag,
-            'SEQ.FT.ROBJ.HMAG': fi_hmag,
+            'SEQ.FT.ROBJ.MAG': ft_kmag,
+            'SEQ.FT.ROBJ.HMAG': ft_hmag,
             'SEQ.FT.ROBJ.DIAMETER': ft_d,
             'SEQ.FT.ROBJ.VIS': ft_vis,
             'SEQ.INS.SOBJ.NAME': sc_name,
-            'SEQ.INS.SOBJ.MAG': sc_mag,
+            'SEQ.INS.SOBJ.MAG': sc_kmag,
             'SEQ.INS.SOBJ.DIAMETER': sc_d,
             'SEQ.INS.SOBJ.VIS': sc_vis,
             'SEQ.INS.SOBJ.X': sobj_x,
@@ -250,13 +273,13 @@ class p2api_GRAVITY(object):
             'INS.FT.POL': ft_pol,
             'INS.SPEC.POL': sc_pol,
             'COU.AG.TYPE': ag_type,
-            'COU.AG.GSSOURCE': gssource,
-            'COU.AG.ALPHA': ag_alpha,
-            'COU.AG.DELTA': ag_delta,
-            'COU.AG.PARALLAX': ag_plx,
-            'COU.AG.PMA': ag_pma,
-            'COU.AG.PMD': ag_pmd,
-            'COU.AG.EPOCH': ag_epoch,
+            'COU.AG.GSSOURCE': gs_source,
+            'COU.AG.ALPHA': gs_alpha,
+            'COU.AG.DELTA': gs_delta,
+            'COU.AG.PARALLAX': gs_plx,
+            'COU.AG.PMA': gs_pma,
+            'COU.AG.PMD': gs_pmd,
+            'COU.AG.EPOCH': gs_epoch,
             'COU.GS.MAG': gs_mag,
             'ISS.BASELINE': baseline,
             'ISS.VLTITYPE': vltitype
@@ -265,8 +288,8 @@ class p2api_GRAVITY(object):
         
         # update the OB version
         odict[name] = api.getOB(ob['obId'])
-        
-        
+     
+
     def add_GRAVITY_dual_obs_calibrator(self, name, folder_name=None, dit=0.3, ndit_obj=32, 
                                         ndit_sky=32, hwpoff=[0], obsseq='O S', sky_x=2000, 
                                         sky_y=2000):
@@ -302,38 +325,6 @@ class p2api_GRAVITY(object):
     def add_GRAVITY_dual_obs_exp(self, name, folder_name=None, dit=0.3, ndit_obj=32, 
                                  ndit_sky=32, hwpoff=[0], obsseq='O S', reloff_x=[0], 
                                  reloff_y=[0], sky_x=2000, sky_y=2000):
-        '''
-        Add acquisition template: GRAVITY_single_acq
-        '''
-        api = self.api
-        folder, folderVersion = self.get_folder(folder_name)
-        odict = folder.get('OBs', None)
-        if odict is None:
-            raise Exception('The folder ({}) does not contain any OB!'.format(folder_name))
-        
-        assert name in odict, 'Cannot find the OB in {}!'.format(folder_name)
-        ob, obVersion = odict[name]
-        
-        obid = ob['obId']
-        try:
-            acqTpl, acqTplVersion = api.createTemplate(obid, 'GRAVITY_dual_obs_exp')
-        except p2api.P2Error as e:
-            raise p2api.P2Error(e)
-        
-        pars = acqTpl['parameters']
-        pList = [dit, ndit_obj, ndit_sky, hwpoff, obsseq, reloff_x, reloff_y, sky_x, sky_y]
-        pdict = {}
-        for loop, pv in enumerate(pList):
-            pdict[pars[loop]['name']] = pv
-        acqTpl, acqTplVersion  = api.setTemplateParams(obid, acqTpl, pdict, acqTplVersion)
-        
-        # update the OB version
-        odict[name] = api.getOB(ob['obId'])
-        
-        
-    def add_GRAVITY_dual_obs_exp_new(self, name, folder_name=None, dit=0.3, ndit_obj=32, 
-                                     ndit_sky=32, hwpoff=[0], obsseq='O S', reloff_x=[0], 
-                                     reloff_y=[0], sky_x=2000, sky_y=2000):
         '''
         Add acquisition template: GRAVITY_single_acq
         '''
@@ -400,55 +391,15 @@ class p2api_GRAVITY(object):
         odict[name] = api.getOB(ob['obId'])
         
         
-    def add_GRAVITY_dual_wide_acq(self, name, folder_name=None, ft_name='Name', ft_mag=0, 
-                                  ft_d=0, ft_vis=1, ft_mode='AUTO', sc_name='Name', sc_mag=0, 
-                                  sc_d=0, sc_vis=1, sc_hmag=0, fi_hmag=0, ft_alpha=None, 
-                                  ft_delta=None, ft_plx=0, ft_pma=0, ft_pmd=0, met_mode='ON',
+    def add_GRAVITY_dual_wide_acq(self, name, folder_name=None, ft_mode='AUTO', met_mode='ON',
+                                  ft_name='Name', ft_mag=0, ft_d=0, ft_vis=1, ft_epoch=2000,
+                                  sc_name='Name', sc_mag=0, 
+                                  sc_d=0, sc_vis=1, sc_hmag=0, ft_hmag=0, ft_alpha=None, 
+                                  ft_delta=None, ft_plx=0, ft_pma=0, ft_pmd=0, 
                                   sc_plx=0, spec_res='MED', ft_pol='IN', sc_pol='IN', 
                                   gssource='SCIENCE', ag_alpha='00:00:00.000', ag_delta='00:00:00.000',
-                                  gs_mag=0, ag_pma=0, ag_pmd=0, ag_type='ADAPT_OPT', baseline=['astrometric'], 
-                                  vltitype=['snapshot']):
-        '''
-        Add acquisition template: GRAVITY_dual_wide_acq
-        '''
-        api = self.api
-        folder, folderVersion = self.get_folder(folder_name)
-        odict = folder.get('OBs', None)
-        if odict is None:
-            raise Exception('The folder ({}) does not contain any OB!'.format(folder_name))
-        
-        assert name in odict, 'Cannot find the OB in {}!'.format(folder_name)
-        ob, obVersion = odict[name]
-        
-        obid = ob['obId']
-        try:
-            acqTpl, acqTplVersion = api.createTemplate(obid, 'GRAVITY_dual_wide_acq')
-        except p2api.P2Error as e:
-            raise p2api.P2Error(e)
-        
-        pars = acqTpl['parameters']
-        pList = [ft_name, ft_mag, ft_d, ft_vis, ft_mode, sc_name, sc_mag, sc_d, 
-                 sc_vis, fi_hmag, ft_alpha, ft_delta, ft_plx, ft_pma, 
-                 ft_pmd, sc_hmag, met_mode, sc_plx, spec_res, ft_pol, sc_pol, gssource, ag_alpha, 
-                 ag_delta, gs_mag, ag_pma, ag_pmd, ag_type, baseline, vltitype]
-        pdict = {}
-        for loop, pv in enumerate(pList):
-            pdict[pars[loop]['name']] = pv
-        acqTpl, acqTplVersion  = api.setTemplateParams(obid, acqTpl, pdict, acqTplVersion)
-        
-        # update the OB version
-        odict[name] = api.getOB(ob['obId'])
-        
-        
-    def add_GRAVITY_dual_wide_acq_new(self, name, folder_name=None, ft_mode='AUTO', met_mode='ON',
-                                      ft_name='Name', ft_mag=0, ft_d=0, ft_vis=1, ft_epoch=2000,
-                                      sc_name='Name', sc_mag=0, 
-                                      sc_d=0, sc_vis=1, sc_hmag=0, ft_hmag=0, ft_alpha=None, 
-                                      ft_delta=None, ft_plx=0, ft_pma=0, ft_pmd=0, 
-                                      sc_plx=0, spec_res='MED', ft_pol='IN', sc_pol='IN', 
-                                      gssource='SCIENCE', ag_alpha='00:00:00.000', ag_delta='00:00:00.000',
-                                      ag_plx=0, gs_mag=0, ag_pma=0, ag_pmd=0, ag_epoch=2000, ag_type='ADAPT_OPT', 
-                                      baseline=['astrometric'], vltitype=['snapshot']):
+                                  ag_plx=0, gs_mag=0, ag_pma=0, ag_pmd=0, ag_epoch=2000, ag_type='ADAPT_OPT', 
+                                  baseline=['astrometric'], vltitype=['snapshot']):
         '''
         Add acquisition template: GRAVITY_dual_wide_acq
         '''
@@ -511,49 +462,12 @@ class p2api_GRAVITY(object):
         odict[name] = api.getOB(ob['obId'])
         
         
-    def add_GRAVITY_single_acq(self, name, folder_name=None, ft_mode='AUTO', sc_name='Name', 
-                               sc_mag=0, sc_d=0, sc_vis=1, fi_hmag=0, met_mode='ON',
-                               plx=0, spec_res='MED', ft_pol='IN', sc_pol='IN', 
-                               gssource='SCIENCE', ag_alpha='00:00:00.000', 
-                               ag_delta='00:00:00.000', gs_mag=0, ag_pma=0, ag_pmd=0, 
-                               ag_type='ADAPT_OPT', baseline=['astrometric'], vltitype=['snapshot']):
-        '''
-        Add acquisition template: GRAVITY_single_acq
-        '''
-        api = self.api
-        folder, folderVersion = self.get_folder(folder_name)
-        odict = folder.get('OBs', None)
-        if odict is None:
-            raise Exception('The folder ({}) does not contain any OB!'.format(folder_name))
-        
-        assert name in odict, 'Cannot find the OB in {}!'.format(folder_name)
-        ob, obVersion = odict[name]
-        
-        obid = ob['obId']
-        try:
-            acqTpl, acqTplVersion = api.createTemplate(obid, 'GRAVITY_single_acq')
-        except p2api.P2Error as e:
-            raise p2api.P2Error(e)
-        
-        pars = acqTpl['parameters']
-        pList = [ft_mode, sc_name, sc_mag, sc_d, sc_vis, fi_hmag, met_mode, plx, 
-                 spec_res, ft_pol, sc_pol, gssource, ag_alpha, ag_delta, gs_mag, 
-                 ag_pma, ag_pmd, ag_type, baseline, vltitype]
-        pdict = {}
-        for loop, pv in enumerate(pList):
-            pdict[pars[loop]['name']] = pv
-        acqTpl, acqTplVersion  = api.setTemplateParams(obid, acqTpl, pdict, acqTplVersion)
-        
-        # update the OB version
-        odict[name] = api.getOB(ob['obId'])
-        
-        
-    def add_GRAVITY_single_acq_new(self, name, folder_name=None, ft_mode='AUTO', sc_name='Name', 
-                                   sc_mag=0, sc_d=0, sc_vis=1, sc_hmag=0, met_mode='ON',
-                                   plx=0, spec_res='MED', ft_pol='IN', sc_pol='IN', 
-                                   gssource='SCIENCE', ag_alpha='00:00:00.000', 
-                                   ag_delta='00:00:00.000', gs_mag=0, ag_plx=0, ag_pma=0, ag_pmd=0, 
-                                   ag_type='ADAPT_OPT', baseline=['astrometric'], vltitype=['snapshot']):
+    def add_GRAVITY_single_onaxis_acq(self, name, folder_name=None, ft_mode='AUTO', met_mode='ON', 
+                                      sc_name='Name', sc_kmag=0, sc_hmag=0, sc_d=0, sc_vis=1, plx=0, 
+                                      spec_res='MED', ft_pol='OUT', sc_pol='OUT', ag_type='ADAPT_OPT', 
+                                      gs_source='SCIENCE', gs_alpha='00:00:00.000', gs_delta='00:00:00.000', 
+                                      gs_plx=0, gs_pma=0, gs_pmd=0, gs_epoch=2000, gs_mag=0, 
+                                      baseline=['astrometric'], vltitype=['snapshot']):
         '''
         Add acquisition template: GRAVITY_single_acq
         '''
@@ -578,7 +492,7 @@ class p2api_GRAVITY(object):
             'SEQ.FT.MODE': ft_mode,
             'SEQ.MET.MODE': met_mode,
             'SEQ.INS.SOBJ.NAME': sc_name,
-            'SEQ.INS.SOBJ.MAG': sc_mag,
+            'SEQ.INS.SOBJ.MAG': sc_kmag,
             'SEQ.INS.SOBJ.HMAG': sc_hmag,
             'SEQ.INS.SOBJ.DIAMETER': sc_d,
             'SEQ.INS.SOBJ.VIS': sc_vis,
@@ -587,13 +501,13 @@ class p2api_GRAVITY(object):
             'INS.FT.POL': ft_pol,
             'INS.SPEC.POL': sc_pol,
             'COU.AG.TYPE': ag_type,
-            'COU.AG.GSSOURCE': gssource,
-            'COU.AG.ALPHA': ag_alpha,
-            'COU.AG.DELTA': ag_delta,
-            'COU.AG.PARALLAX': ag_plx,
-            'COU.AG.PMA': ag_pma,
-            'COU.AG.PMD': ag_pmd,
-            'COU.AG.EPOCH': 2000,
+            'COU.AG.GSSOURCE': gs_source,
+            'COU.AG.ALPHA': gs_alpha,
+            'COU.AG.DELTA': gs_delta,
+            'COU.AG.PARALLAX': gs_plx,
+            'COU.AG.PMA': gs_pma,
+            'COU.AG.PMD': gs_pmd,
+            'COU.AG.EPOCH': gs_epoch,
             'COU.GS.MAG': gs_mag,
             'ISS.BASELINE': baseline,
             'ISS.VLTITYPE': vltitype
@@ -603,7 +517,61 @@ class p2api_GRAVITY(object):
         # update the OB version
         odict[name] = api.getOB(ob['obId'])
         
+    
+    def add_GRAVITY_single_offaxis_acq(self, name, folder_name=None, ft_mode='AUTO', met_mode='OFF', 
+                                       sc_name='Name', sc_kmag=0, sc_hmag=0, sc_d=0, sc_vis=1, plx=0, 
+                                       ft_pol='OUT', ag_type='ADAPT_OPT', gs_source='SCIENCE', 
+                                       gs_alpha='00:00:00.000', gs_delta='00:00:00.000', 
+                                       gs_plx=0, gs_pma=0, gs_pmd=0, gs_epoch=2000, gs_mag=0, 
+                                       baseline=['astrometric'], vltitype=['snapshot']):
+        '''
+        Add acquisition template: GRAVITY_single_acq
+        '''
+        api = self.api
+        folder, folderVersion = self.get_folder(folder_name)
+        odict = folder.get('OBs', None)
+        if odict is None:
+            raise Exception('The folder ({}) does not contain any OB!'.format(folder_name))
         
+        assert name in odict, 'Cannot find the OB in {}!'.format(folder_name)
+        ob, obVersion = odict[name]
+        
+        obid = ob['obId']
+        try:
+            acqTpl, acqTplVersion = api.createTemplate(obid, 'GRAVITY_single_acq')
+        except p2api.P2Error as e:
+            raise p2api.P2Error(e)
+        
+        pars = acqTpl['parameters']
+        
+        pdict = {
+            'SEQ.FT.MODE': ft_mode,
+            'SEQ.MET.MODE': met_mode,
+            'SEQ.INS.SOBJ.NAME': sc_name,
+            'SEQ.INS.SOBJ.MAG': sc_kmag,
+            'SEQ.INS.SOBJ.HMAG': sc_hmag,
+            'SEQ.INS.SOBJ.DIAMETER': sc_d,
+            'SEQ.INS.SOBJ.VIS': sc_vis,
+            'TEL.TARG.PARALLAX': plx,
+            'INS.FT.POL': ft_pol,
+            'COU.AG.TYPE': ag_type,
+            'COU.AG.GSSOURCE': gs_source,
+            'COU.AG.ALPHA': gs_alpha,
+            'COU.AG.DELTA': gs_delta,
+            'COU.AG.PARALLAX': gs_plx,
+            'COU.AG.PMA': gs_pma,
+            'COU.AG.PMD': gs_pmd,
+            'COU.AG.EPOCH': gs_epoch,
+            'COU.GS.MAG': gs_mag,
+            'ISS.BASELINE': baseline,
+            'ISS.VLTITYPE': vltitype
+        }
+        acqTpl, acqTplVersion  = api.setTemplateParams(obid, acqTpl, pdict, acqTplVersion)
+        
+        # update the OB version
+        odict[name] = api.getOB(ob['obId'])
+
+
     def add_GRAVITY_single_obs_calibrator(self, name, folder_name=None, dit=0.3, ndit_obj=32, 
                                           ndit_sky=32, hwpoff=[0], obsseq='O S', sky_x=2000, 
                                           sky_y=2000):
@@ -639,38 +607,6 @@ class p2api_GRAVITY(object):
     def add_GRAVITY_single_obs_exp(self, name, folder_name=None, dit=0.3, ndit_obj=32, 
                                    ndit_sky=32, hwpoff=[0], obsseq='O S', sky_x=2000, 
                                    sky_y=2000):
-        '''
-        Add acquisition template: GRAVITY_single_acq
-        '''
-        api = self.api
-        folder, folderVersion = self.get_folder(folder_name)
-        odict = folder.get('OBs', None)
-        if odict is None:
-            raise Exception('The folder ({}) does not contain any OB!'.format(folder_name))
-        
-        assert name in odict, 'Cannot find the OB in {}!'.format(folder_name)
-        ob, obVersion = odict[name]
-        
-        obid = ob['obId']
-        try:
-            acqTpl, acqTplVersion = api.createTemplate(obid, 'GRAVITY_single_obs_exp')
-        except p2api.P2Error as e:
-            raise p2api.P2Error(e)
-        
-        pars = acqTpl['parameters']
-        pList = [dit, ndit_obj, ndit_sky, hwpoff, obsseq, sky_x, sky_y]
-        pdict = {}
-        for loop, pv in enumerate(pList):
-            pdict[pars[loop]['name']] = pv
-        acqTpl, acqTplVersion  = api.setTemplateParams(obid, acqTpl, pdict, acqTplVersion)
-        
-        # update the OB version
-        odict[name] = api.getOB(ob['obId'])
-        
-        
-    def add_GRAVITY_single_obs_exp_new(self, name, folder_name=None, dit=0.3, ndit_obj=32, 
-                                       ndit_sky=32, hwpoff=[0], obsseq='O S', sky_x=2000, 
-                                       sky_y=2000):
         '''
         Add acquisition template: GRAVITY_single_acq
         '''
