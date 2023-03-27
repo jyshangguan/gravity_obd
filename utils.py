@@ -16,7 +16,8 @@ __all__ = ['modulepath', 'load_obd_module', 'write_obd', 'coord_offset', 'cal_of
            'cal_coord_motion', 'sc_offset', 'get_coord_plain', 'get_coord_colon',
            'get_pos_current', 'get_pos_J2000', 'get_pos_ao', 'read_coordinate', 
            'coordinate_convert_epoch', 'search_gaia_single', 'search_gaia_2table', 
-           'xmatch_gaiadr2', 'xmatch_gaiadr3', 'search_simbad', 'color_GrpH', 'color_GrpK']
+           'xmatch_gaiadr2', 'xmatch_gaiadr3', 'xmatch_2mass_psc', 'search_simbad', 
+           'color_GrpH', 'color_GrpK']
 
 #-> Obtain the current path
 pathList = os.path.abspath(__file__).split("/")
@@ -706,6 +707,64 @@ def xmatch_gaiadr3(t, radius, colRA, colDec):
     t_f.add_columns([ra_j2000, dec_j2000, ra_j2016, dec_j2016, pma, pmd, plx, rv, G, Grp, Gbp, sourceID], 
                    names=['ra_gaia_J2000', 'dec_gaia_J2000', 'ra_gaia_J2016', 'dec_gaia_J2016',
                           'pma', 'pmd', 'plx', 'rv', 'G', 'Grp', 'Gbp', 'sourceID'])
+    return t_f
+
+
+def xmatch_2mass_psc(t, radius, colRA, colDec):
+    '''
+    Cross match the table with 2MASS point source catalog.
+    
+    Parameters
+    ----------
+    t : Astropy Table
+        The table of targets.
+    radius : float
+        The cross match radius, units: arcsec.
+    colRA : string
+        The column name of the RA.
+    colDec : string
+        The column name of the Dec.
+    vizier_code : string
+        The vizieR code of the 2MASS PSC table.
+        
+    Returns
+    -------
+    t_f : Astropy Table
+        The table of cross matched results.
+    '''
+    for cn in ['RAJ2000', 'DEJ2000', 'Jmag', 'Hmag', 'Kmag']:
+        assert cn not in t.colnames, 'The input table has {} as a column!'.format(cn)
+    
+    t_o = XMatch.query(cat1=t,
+                       cat2='vizier:II/246/out',
+                       max_distance=radius*u.arcsec, colRA1=colRA, colDec1=colDec)
+    ra_j2000 = []
+    dec_j2000 = []
+    jmag = []
+    hmag = []
+    kmag = []
+    sourceID = []
+    for loop in range(len(t)):
+        fltr = np.isclose(t_o[colRA], t[colRA][loop]) & np.isclose(t_o[colDec], t[colDec][loop])
+        if np.sum(fltr) == 0:
+            ra_j2000.append(np.nan)
+            dec_j2000.append(np.nan)
+            jmag.append(np.nan)
+            hmag.append(np.nan)
+            kmag.append(np.nan)
+            sourceID.append(np.nan)
+        else:
+            t_f = t_o[fltr]
+            idx = np.argmin(t_f['angDist'])
+            ra_j2000.append(t_f['RAJ2000'][idx])
+            dec_j2000.append(t_f['DEJ2000'][idx])
+            jmag.append(t_f['Jmag'][idx])
+            hmag.append(t_f['Hmag'][idx])
+            kmag.append(t_f['Kmag'][idx])
+            sourceID.append(t_f['2MASS'][idx])
+    t_f = t.copy()
+    t_f.add_columns([ra_j2000, dec_j2000, jmag, hmag, kmag, sourceID], 
+                   names=['RAJ2000', 'DECJ2000', 'Jmag', 'Hmag', 'Kmag', 'sourceID'])
     return t_f
 
     
