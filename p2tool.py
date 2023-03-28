@@ -188,7 +188,7 @@ class p2api_GRAVITY(object):
         
         obid = ob['obId']
         try:
-            acqTpl, acqTplVersion = api.createTemplate(obid, 'GRAVITY_dual_acq')
+            acqTpl, acqTplVersion = api.createTemplate(obid, 'GRAVITY_dual_offaxis_acq')
         except p2api.P2Error as e:
             raise p2api.P2Error(e)
         
@@ -250,7 +250,7 @@ class p2api_GRAVITY(object):
         
         obid = ob['obId']
         try:
-            acqTpl, acqTplVersion = api.createTemplate(obid, 'GRAVITY_dual_acq')
+            acqTpl, acqTplVersion = api.createTemplate(obid, 'GRAVITY_dual_onaxis_acq')
         except p2api.P2Error as e:
             raise p2api.P2Error(e)
         
@@ -482,7 +482,7 @@ class p2api_GRAVITY(object):
         
         obid = ob['obId']
         try:
-            acqTpl, acqTplVersion = api.createTemplate(obid, 'GRAVITY_single_acq')
+            acqTpl, acqTplVersion = api.createTemplate(obid, 'GRAVITY_single_onaxis_acq')
         except p2api.P2Error as e:
             raise p2api.P2Error(e)
         
@@ -538,7 +538,7 @@ class p2api_GRAVITY(object):
         
         obid = ob['obId']
         try:
-            acqTpl, acqTplVersion = api.createTemplate(obid, 'GRAVITY_single_acq')
+            acqTpl, acqTplVersion = api.createTemplate(obid, 'GRAVITY_single_offaxis_acq')
         except p2api.P2Error as e:
             raise p2api.P2Error(e)
         
