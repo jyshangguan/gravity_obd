@@ -311,11 +311,22 @@ class p2api_GRAVITY(object):
         except p2api.P2Error as e:
             raise p2api.P2Error(e)
         
-        pars = acqTpl['parameters']
-        pList = [dit, ndit_obj, ndit_sky, hwpoff, obsseq, sky_x, sky_y]
-        pdict = {}
-        for loop, pv in enumerate(pList):
-            pdict[pars[loop]['name']] = pv
+        #pars = acqTpl['parameters']
+        #pList = [dit, ndit_obj, ndit_sky, hwpoff, obsseq, sky_x, sky_y]
+        #pdict = {}
+        #for loop, pv in enumerate(pList):
+        #    pdict[pars[loop]['name']] = pv
+
+        pdict = {
+            'DET2.DIT': dit,
+            'DET2.NDIT.OBJECT': ndit_obj,
+            'DET2.NDIT.SKY': ndit_sky,
+            'SEQ.SKY.X': sky_x, 
+            'SEQ.SKY.Y': sky_y,
+            'SEQ.HWPOFF': hwpoff,
+            'SEQ.OBSSEQ': obsseq,
+        }
+
         acqTpl, acqTplVersion  = api.setTemplateParams(obid, acqTpl, pdict, acqTplVersion)
         
         # update the OB version

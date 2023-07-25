@@ -673,6 +673,7 @@ def xmatch_gaiadr3(t, radius, colRA, colDec):
     Grp = []
     Gbp = []
     sourceID = []
+    ruwe = []
     for loop in range(len(t)):
         fltr = np.isclose(t_o[colRA], t[colRA][loop]) & np.isclose(t_o[colDec], t[colDec][loop])
         if np.sum(fltr) == 0:
@@ -688,6 +689,7 @@ def xmatch_gaiadr3(t, radius, colRA, colDec):
             Grp.append(np.nan)
             Gbp.append(np.nan)
             sourceID.append(np.nan)
+            ruwe.append(np.nan)
         else:
             t_f = t_o[fltr]
             idx = np.argmin(t_f['angDist'])
@@ -703,10 +705,11 @@ def xmatch_gaiadr3(t, radius, colRA, colDec):
             Grp.append(t_f['RPmag'][idx])
             Gbp.append(t_f['BPmag'][idx])
             sourceID.append(t_f['DR3Name'][idx])
+            ruwe.append(t_f['RUWE'][idx])
     t_f = t.copy()
-    t_f.add_columns([ra_j2000, dec_j2000, ra_j2016, dec_j2016, pma, pmd, plx, rv, G, Grp, Gbp, sourceID], 
+    t_f.add_columns([ra_j2000, dec_j2000, ra_j2016, dec_j2016, pma, pmd, plx, rv, G, Grp, Gbp, ruwe, sourceID], 
                    names=['ra_gaia_J2000', 'dec_gaia_J2000', 'ra_gaia_J2016', 'dec_gaia_J2016',
-                          'pma', 'pmd', 'plx', 'rv', 'G', 'Grp', 'Gbp', 'sourceID'])
+                          'pma', 'pmd', 'plx', 'rv', 'G', 'Grp', 'Gbp', 'RUWE', 'sourceID'])
     return t_f
 
 
